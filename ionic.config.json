@@ -1,0 +1,7 @@
+{
+  "name": "dsmr-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
