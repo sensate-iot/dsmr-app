@@ -2,14 +2,22 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
+  // {
+  //   path: '',
+  //   redirectTo: 'folder/Inbox',
+  //   pathMatch: 'full'
+  // },
   {
     path: '',
-    redirectTo: 'folder/Inbox',
-    pathMatch: 'full'
+    loadChildren: () => import('./pages/statistics/statistics.module').then( m => m.StatisticsPageModule)
   },
   {
-    path: 'folder/:id',
-    loadChildren: () => import('./folder/folder.module').then( m => m.FolderPageModule)
+    path: 'weekly',
+    loadChildren: () => import('./pages/generic/weekly/weekly.module').then( m => m.WeeklyPageModule)
+  },
+  {
+    path: 'monthly',
+    loadChildren: () => import('./pages/generic/monthly/monthly.module').then( m => m.MonthlyPageModule)
   }
 ];
 
