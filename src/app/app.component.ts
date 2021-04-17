@@ -11,6 +11,8 @@ export class AppComponent {
     { title: 'Environment', url: '/statistics/environment/overview', icon: 'rainy' },
     { title: 'Settings', url: '/settings/general', icon: 'settings' },
   ];
+
   public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
-  constructor() {}
+
+  public constructor() {}
 }

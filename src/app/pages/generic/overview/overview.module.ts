@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { OverviewPageRoutingModule } from './overview-routing.module';
 
 import { OverviewPage } from './overview.page';
+import {InfoCardComponent} from "../../../components/info-card/info-card.component";
 
 @NgModule({
   imports: [
@@ -15,6 +16,6 @@ import { OverviewPage } from './overview.page';
     IonicModule,
     OverviewPageRoutingModule
   ],
-  declarations: [OverviewPage]
+  declarations: [OverviewPage, InfoCardComponent]
 })
 export class OverviewPageModule {}

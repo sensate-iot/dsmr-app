@@ -4,17 +4,58 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>
-      Statistics - Overview
+      Overview
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Statistics - Overview</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <div class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <app-info-card title="Temperature" icon="home-outline" content="{{temperature}}°C"></app-info-card>
+        </ion-col>
+        <ion-col>
+          <app-info-card title="Gas Usage" icon="flame-outline" content="{{gasUsageToday}}m3"></app-info-card>
+        </ion-col>
+      </ion-row>
 
-  <h1>Overview</h1>
+      <ion-row>
+        <ion-col>
+          <app-info-card title="Usage" icon="flash-outline" content="{{powerUsage}}W"></app-info-card>
+        </ion-col>
+        <ion-col>
+          <app-info-card title="Production" icon="sunny-outline" content="{{powerProduction}}W"></app-info-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-card>
+      <ion-card-header>
+        Power
+      </ion-card-header>
+      <ion-card-content>
+        <canvas #barCanvas></canvas>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        Tariff
+      </ion-card-header>
+      <ion-card-content>
+        <canvas #doughnutCanvas></canvas>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        Gas usage
+      </ion-card-header>
+      <ion-card-content>
+        <canvas #lineCanvas></canvas>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
