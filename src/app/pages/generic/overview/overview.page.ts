@@ -103,6 +103,8 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         this.temperature = data.temperature.toFixed(2);
         this.powerUsage = data.powerUsage.toFixed(2);
         this.powerProduction = data.powerProduction.toFixed(2);
+        const gas = data.gasFlow * 1000;
+        this.gasUsageToday = gas.toFixed(2);
 
         return this.loadPowerToday();
       }), mergeMap(resp => {
@@ -152,7 +154,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.gasUsageToday = gasUsage.toFixed(2);
+    //this.gasUsageToday = gasUsage.toFixed(2);
 
     this.doughnutPowerData.push(normalTariffTotal / energyUsage * 100);
     this.doughnutPowerData.push(lowTariffTotal / energyUsage * 100);
@@ -199,6 +201,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         labels: this.labels,
         datasets: [
           {
+            yAxisID: 'power',
             label: 'Power Usage',
             data: this.barChartPowerUsage,
             backgroundColor: [
@@ -210,6 +213,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
             borderWidth: 1
           },
           {
+            yAxisID: 'power',
             label: 'Power Production',
             data: this.barChartPowerProduction,
             backgroundColor: [
@@ -221,6 +225,17 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
             borderWidth: 1
           }
         ]
+      },
+      options: {
+        scales: {
+          power: {
+            position: 'left',
+            type: 'linear',
+            ticks: {
+              callback: (tickValue, index) => `${tickValue}W`
+            }
+          }
+        }
       }
     });
 
@@ -305,11 +320,17 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         scales: {
           gas: {
             position: 'left',
-            type: 'linear'
+            type: 'linear',
+            ticks: {
+              callback: (tickValue, index) => `${tickValue}L/min`
+            }
           },
           temperature: {
             position: 'right',
-            type: 'linear'
+            type: 'linear',
+            ticks: {
+              callback: (tickValue, index) => `${tickValue}°C`
+            }
           }
         }
       }

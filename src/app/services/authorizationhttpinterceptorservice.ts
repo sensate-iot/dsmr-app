@@ -1,17 +1,19 @@
 import { Injectable } from '@angular/core';
 import {HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {AuthenticationService} from './authentication.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthorizationHttpInterceptorService implements HttpInterceptor {
-  public constructor() { }
+  public constructor(private readonly auth: AuthenticationService) { }
 
   public intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    //const key = 'B9E706AA-EFD6-45ED-9C7E-236ADE0B56BA';
-    const key = 'FE52C7F6-1ADE-4F11-B276-431DD484FDED';
-    const clonedRequest = req.clone({ headers: req.headers.append('X-ProductToken', key) });
+    const key = this.auth.getApiKey();
+    const headers = req.headers.append('X-ProductToken', key)
+      .append('Content-Type', 'application/json');
+    const clonedRequest = req.clone({ headers });
 
     return next.handle(clonedRequest);
   }

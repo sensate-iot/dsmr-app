@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form #form="ngForm">
+    <ion-grid>
+      <ion-row class="login" >
+        <ion-col size-md="6" size-lg="5" size-xs="12">
+          <div>
+            <ion-item>
+              <ion-input name="email" placeholder="Email" [(ngModel)]="email" email required></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input name="password" type="password" [(ngModel)]="password" placeholder="Password" required></ion-input>
+            </ion-item>
+          </div>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="6">
+          <div>
+            <ion-button size="large" (click)="onOtpClicked()" disabled="true" expand="block">Request OTP</ion-button>
+          </div>
+        </ion-col>
+        <ion-col size="6">
+          <div>
+            <ion-button size="large" type="submit" (click)="onLoginClicked()" [disabled]="form.invalid" expand="block">Login</ion-button>
+          </div>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>

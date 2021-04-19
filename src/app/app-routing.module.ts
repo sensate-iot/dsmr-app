@@ -12,12 +12,8 @@ const routes: Routes = [
     loadChildren: () => import('./pages/statistics/statistics.module').then( m => m.StatisticsPageModule)
   },
   {
-    path: 'weekly',
-    loadChildren: () => import('./pages/generic/weekly/weekly.module').then( m => m.WeeklyPageModule)
-  },
-  {
-    path: 'monthly',
-    loadChildren: () => import('./pages/generic/monthly/monthly.module').then( m => m.MonthlyPageModule)
+    path: 'login',
+    loadChildren: () => import('./pages/login/login.module').then( m => m.LoginPageModule)
   }
 ];
 
