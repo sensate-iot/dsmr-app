@@ -8,6 +8,7 @@ const routes: Routes = [
   {
     path: 'statistics',
     component: StatisticsPage,
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'generic/overview',
