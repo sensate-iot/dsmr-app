@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sensateiot.smartenergy">
+  xmlns:tools="http://schemas.android.com/tools"
+  package="com.sensateiot.smartenergy">
 
     <application
         android:allowBackup="true"
@@ -10,7 +11,9 @@
         android:supportsRtl="true"
         android:versionCode="1"
         android:versionName="0.0.1"
-        android:theme="@style/AppTheme">
+        android:debuggable="false"
+        android:theme="@style/AppTheme"
+        tools:ignore="HardcodedDebugMode">
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
