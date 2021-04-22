@@ -9,10 +9,9 @@ import {Router} from '@angular/router';
 })
 export class AppComponent implements OnInit {
   public appPages = [
-    { title: 'Generic', url: '/statistics/generic/overview', icon: 'stats-chart' },
-    { title: 'Power', url: '/statistics/power/overview', icon: 'flash' },
-    { title: 'Environment', url: '/statistics/environment/overview', icon: 'rainy' },
-    { title: 'Settings', url: '/settings/general', icon: 'settings' },
+    { title: 'Energy', url: '/energy/overview', icon: 'stats-chart' },
+    { title: 'Environment', url: '/environment/overview', icon: 'rainy' },
+    { title: 'Settings', url: '/settings', icon: 'settings' },
   ];
 
   public name: string;

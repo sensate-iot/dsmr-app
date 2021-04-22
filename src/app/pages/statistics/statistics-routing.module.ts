@@ -11,19 +11,34 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {
-        path: 'generic/overview',
+        path: 'energy/overview',
         canActivate: [AuthGuard],
-        loadChildren: () => import('../generic/overview/overview.module').then( m => m.OverviewPageModule)
+        loadChildren: () => import('../energy/overview/overview.module').then(m => m.OverviewPageModule)
       },
       {
-        path: 'generic/weekly',
+        path: 'energy/weekly',
         canActivate: [AuthGuard],
-        loadChildren: () => import('../generic/weekly/weekly.module').then( m => m.WeeklyPageModule)
+        loadChildren: () => import('../energy/weekly/weekly.module').then(m => m.WeeklyPageModule)
       },
       {
-        path: 'generic/monthly',
+        path: 'energy/monthly',
         canActivate: [AuthGuard],
-        loadChildren: () => import('../generic/monthly/monthly.module').then( m => m.MonthlyPageModule)
+        loadChildren: () => import('../energy/monthly/monthly.module').then(m => m.MonthlyPageModule)
+      },
+      {
+        path: 'environment/overview',
+        canActivate: [AuthGuard],
+        loadChildren: () => import('../environment/overview/overview.module').then(m => m.OverviewPageModule)
+      },
+      {
+        path: 'environment/weekly',
+        canActivate: [AuthGuard],
+        loadChildren: () => import('../environment/weekly/weekly.module').then(m => m.WeeklyPageModule)
+      },
+      {
+        path: 'environment/monthly',
+        canActivate: [AuthGuard],
+        loadChildren: () => import('../environment/monthly/monthly.module').then(m => m.MonthlyPageModule)
       }
     ]
   },

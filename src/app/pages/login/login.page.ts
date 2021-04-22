@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {AuthenticationService} from '../../services/authentication.service';
-import {Router} from "@angular/router";
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +23,7 @@ export class LoginPage implements OnInit {
 
   public onLoginClicked() {
     this.auth.login(this.email, this.password).subscribe(_ => {
-      this.router.navigate(['/statistics/generic/overview']).then();
+      this.router.navigate(['/statistics/energy/overview']).then();
     });
   }
 }

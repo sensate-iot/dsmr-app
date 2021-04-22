@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-statistics',
@@ -10,7 +10,7 @@ export class StatisticsPage implements OnInit {
 
   public constructor(private readonly router: Router) {
     if(this.router.url === '/' || this.router.url === '/statistics') {
-      this.router.navigate(['/statistics/generic/overview']).then();
+      this.router.navigate(['/statistics/energy/overview']).then();
     }
   }
 

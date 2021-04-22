@@ -37,26 +37,20 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   private doughnutChart: Chart;
   private lineChart: Chart;
 
-  private readonly barChartPowerUsage: number[];
-  private readonly barChartPowerProduction: number[];
-  private readonly doughnutPowerData: number[];
-  private readonly lineGasUsageToday: number[];
-  private readonly lineTemperatureToday: number[];
-  private readonly lineGasUsageLabels: string[];
-  private readonly labels: string[];
+  private barChartPowerUsage: number[];
+  private barChartPowerProduction: number[];
+  private doughnutPowerData: number[];
+  private lineGasUsageToday: number[];
+  private lineTemperatureToday: number[];
+  private lineGasUsageLabels: string[];
+  private labels: string[];
 
   private readonly destroy$;
 
   public constructor(private readonly dsmr: DsmrService,
                      private readonly env: EnvironmentService) {
     this.destroy$ = new Subject();
-    this.barChartPowerProduction = [];
-    this.barChartPowerUsage = [];
-    this.doughnutPowerData = [];
-    this.lineGasUsageLabels = [];
-    this.lineGasUsageToday = [];
-    this.lineTemperatureToday = [];
-    this.labels = [];
+    this.initializeArrays();
 
     Chart.register(LineController, BarController,
       PointElement,
@@ -77,9 +71,16 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngAfterViewInit() {
-    this.loadData();
+    this.loadGraphs();
+    this.loadData().then();
   }
 
+  public refresh(event: any) {
+    this.initializeArrays();
+    this.loadData().then(() => {
+      event.target.complete();
+    });
+  }
 
   private loadPowerToday() {
     const todayStart = OverviewPage.getStartToday();
@@ -95,43 +96,64 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     return this.env.getEnvironmentData(1, todayStart, todayEnd, 'hour');
   }
 
+  private initializeArrays() {
+    this.barChartPowerProduction = [];
+    this.barChartPowerUsage = [];
+    this.doughnutPowerData = [];
+    this.lineGasUsageLabels = [];
+    this.lineGasUsageToday = [];
+    this.lineTemperatureToday = [];
+    this.labels = [];
+  }
+
   private loadData() {
-    this.dsmr.getLatestData(1)
-      .pipe(takeUntil(this.destroy$), mergeMap(resp => {
-        const data = resp.data;
+    return new Promise((resolve, reject) => {
+      this.dsmr.getLatestData(1)
+        .pipe(takeUntil(this.destroy$), mergeMap(resp => {
+          const data = resp.data;
 
-        this.temperature = data.temperature.toFixed(2);
-        this.powerUsage = data.powerUsage.toFixed(2);
-        this.powerProduction = data.powerProduction.toFixed(2);
-        const gas = data.gasFlow * 1000;
-        this.gasUsageToday = gas.toFixed(2);
+          this.temperature = data.temperature.toFixed(2);
+          this.powerUsage = data.powerUsage.toFixed(2);
+          this.powerProduction = data.powerProduction.toFixed(2);
+          const gas = data.gasFlow * 1000;
+          this.gasUsageToday = gas.toFixed(2);
 
-        return this.loadPowerToday();
-      }), mergeMap(resp => {
-        const now = moment(new Date()).add(-6, 'hours');
+          return this.loadPowerToday();
+        }), mergeMap(resp => {
+          const now = moment(new Date()).add(-12, 'hours');
 
-        resp.data.forEach(dp => {
-          const dpMoment = moment(dp.timestamp).local();
+          resp.data.forEach(dp => {
+            const dpMoment = moment(dp.timestamp).local();
 
-          if(dpMoment < now) {
-            return;
-          }
+            if(dpMoment < now) {
+              return;
+            }
 
-          this.barChartPowerProduction.push(dp.energyProduction);
-          this.barChartPowerUsage.push(dp.energyUsage);
-          this.labels.push(OverviewPage.getHourMinutes(dp.timestamp));
-        });
+            this.barChartPowerProduction.push(dp.energyProduction);
+            this.barChartPowerUsage.push(dp.energyUsage);
+            this.labels.push(OverviewPage.getHourMinutes(dp.timestamp));
+          });
 
-        this.computeAndSetUsageToday(resp.data);
-        return this.loadEnvironmentToday();
-      })).subscribe(resp => {
+          this.computeAndSetUsageToday(resp.data);
+          return this.loadEnvironmentToday();
+        })).subscribe(resp => {
         resp.data.forEach(dp => {
           this.lineTemperatureToday.push(dp.insideTemperature);
         });
-        this.loadGraphs();
-    }, error => {
+
+        this.refreshView();
+        resolve();
+      }, error => {
         console.error(error);
+        reject();
+      });
     });
+  }
+
+  private refreshView() {
+    this.barChart.update();
+    this.doughnutChart.update();
+    this.lineChart.update();
   }
 
   private computeAndSetUsageToday(today: EnergyDataPoint[]) {
@@ -153,8 +175,6 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         lowTariffTotal += dp.energyUsage;
       }
     });
-
-    //this.gasUsageToday = gasUsage.toFixed(2);
 
     this.doughnutPowerData.push(normalTariffTotal / energyUsage * 100);
     this.doughnutPowerData.push(lowTariffTotal / energyUsage * 100);
@@ -232,7 +252,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
             position: 'left',
             type: 'linear',
             ticks: {
-              callback: (tickValue, index) => `${tickValue}W`
+              callback: (tickValue, _) => `${tickValue}W`
             }
           }
         }
@@ -251,7 +271,6 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
               'rgba(255, 99, 132, 0.2)',
               'rgba(99, 255, 132, 0.2)'
             ],
-            hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FF6384', '#36A2EB', '#FFCE56']
           }
         ]
       },
@@ -322,14 +341,14 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
             position: 'left',
             type: 'linear',
             ticks: {
-              callback: (tickValue, index) => `${tickValue}L/min`
+              callback: (tickValue, _) => `${tickValue}L/min`
             }
           },
           temperature: {
             position: 'right',
             type: 'linear',
             ticks: {
-              callback: (tickValue, index) => `${tickValue}°C`
+              callback: (tickValue, _) => `${tickValue}°C`
             }
           }
         }
