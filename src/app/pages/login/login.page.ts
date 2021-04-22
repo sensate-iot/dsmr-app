@@ -23,7 +23,7 @@ export class LoginPage implements OnInit {
 
   public onLoginClicked() {
     this.auth.login(this.email, this.password).subscribe(_ => {
-      this.router.navigate(['/statistics/energy/overview']).then();
+      this.router.navigate(['/energy/overview']).then();
     });
   }
 }
