@@ -21,6 +21,7 @@ export class AuthenticationService {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('key');
     localStorage.removeItem('userId');
+    localStorage.removeItem('selectedDevice');
   }
 
   public isLoggedIn() {

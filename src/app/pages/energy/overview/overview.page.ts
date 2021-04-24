@@ -37,20 +37,26 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   private doughnutChart: Chart;
   private lineChart: Chart;
 
-  private barChartPowerUsage: number[];
-  private barChartPowerProduction: number[];
-  private doughnutPowerData: number[];
-  private lineGasUsageToday: number[];
-  private lineTemperatureToday: number[];
-  private lineGasUsageLabels: string[];
-  private labels: string[];
+  private readonly barChartPowerUsage: number[];
+  private readonly barChartPowerProduction: number[];
+  private readonly doughnutPowerData: number[];
+  private readonly lineGasUsageToday: number[];
+  private readonly lineTemperatureToday: number[];
+  private readonly lineGasUsageLabels: string[];
+  private readonly labels: string[];
 
   private readonly destroy$;
 
   public constructor(private readonly dsmr: DsmrService,
                      private readonly env: EnvironmentService) {
     this.destroy$ = new Subject();
-    this.initializeArrays();
+    this.barChartPowerProduction = [];
+    this.barChartPowerUsage = [];
+    this.doughnutPowerData = [];
+    this.lineGasUsageLabels = [];
+    this.lineGasUsageToday = [];
+    this.lineTemperatureToday = [];
+    this.labels = [];
 
     Chart.register(LineController, BarController,
       PointElement,
@@ -76,7 +82,8 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public refresh(event: any) {
-    this.initializeArrays();
+    this.clearGraph();
+
     this.loadData().then(() => {
       event.target.complete();
     });
@@ -96,19 +103,21 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     return this.env.getEnvironmentData(1, todayStart, todayEnd, 'hour');
   }
 
-  private initializeArrays() {
-    this.barChartPowerProduction = [];
-    this.barChartPowerUsage = [];
-    this.doughnutPowerData = [];
-    this.lineGasUsageLabels = [];
-    this.lineGasUsageToday = [];
-    this.lineTemperatureToday = [];
-    this.labels = [];
+  private clearGraph() {
+    this.barChartPowerProduction.length = 0;
+    this.barChartPowerUsage.length = 0;
+    this.doughnutPowerData.length = 0;
+    this.lineGasUsageLabels.length = 0;
+    this.lineGasUsageToday.length = 0;
+    this.lineTemperatureToday.length = 0;
+    this.labels.length = 0;
   }
 
   private loadData() {
     return new Promise((resolve, reject) => {
-      this.dsmr.getLatestData(1)
+      const device = this.dsmr.getSelectedDevice();
+
+      this.dsmr.getLatestData(device.id)
         .pipe(takeUntil(this.destroy$), mergeMap(resp => {
           const data = resp.data;
 

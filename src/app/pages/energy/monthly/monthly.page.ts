@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {DsmrService} from '../../../services/dsmr.service';
+import {AuthenticationService} from '../../../services/authentication.service';
 
 @Component({
   selector: 'app-monthly',
@@ -7,7 +9,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MonthlyPage implements OnInit {
 
-  public constructor() { }
+  public constructor(private readonly dsmr: DsmrService,
+                     private readonly auth: AuthenticationService) { }
 
   public ngOnInit() {
   }

@@ -10,12 +10,15 @@ import { OverviewPage } from './overview.page';
 import {InfoCardComponent} from "../../../components/info-card/info-card.component";
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    OverviewPageRoutingModule
-  ],
-  declarations: [OverviewPage, InfoCardComponent]
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        OverviewPageRoutingModule
+    ],
+    exports: [
+        InfoCardComponent
+    ],
+    declarations: [OverviewPage, InfoCardComponent]
 })
 export class OverviewPageModule {}
