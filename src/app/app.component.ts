@@ -1,6 +1,16 @@
 import {Component, OnInit} from '@angular/core';
 import {AuthenticationService} from './services/authentication.service';
 import {Router} from '@angular/router';
+import {
+  ArcElement,
+  BarController,
+  BarElement, CategoryScale,
+  Chart,
+  DoughnutController, Legend, LinearScale,
+  LineController,
+  LineElement,
+  PointElement, Title
+} from 'chart.js';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +27,17 @@ export class AppComponent implements OnInit {
   public name: string;
 
   public constructor(private readonly auth: AuthenticationService,
-                     private readonly router: Router) {}
+                     private readonly router: Router) {
+
+    Chart.register(LineController, BarController,
+      PointElement,
+      BarElement,
+      DoughnutController,
+      ArcElement,
+      LineElement,
+      Legend,
+      CategoryScale, LinearScale, Title);
+  }
 
   public ngOnInit(): void {
     const user = this.auth.getCurrentUser();

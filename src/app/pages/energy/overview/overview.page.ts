@@ -57,15 +57,6 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     this.lineGasUsageToday = [];
     this.lineTemperatureToday = [];
     this.labels = [];
-
-    Chart.register(LineController, BarController,
-      PointElement,
-      BarElement,
-      DoughnutController,
-      ArcElement,
-      LineElement,
-      Legend,
-      CategoryScale, LinearScale, Title);
   }
 
   public ngOnDestroy(): void {

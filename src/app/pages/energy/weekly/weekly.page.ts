@@ -1,17 +1,8 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {DsmrService} from '../../../services/dsmr.service';
-import {
-  ArcElement,
-  BarController,
-  BarElement, CategoryScale,
-  Chart,
-  DoughnutController, Legend, LinearScale,
-  LineController,
-  LineElement,
-  PointElement, Title
-} from 'chart.js';
-import {EnergyDataPoint} from "../../../models/energydatapoint";
-import {SettingsService} from "../../../services/settings.service";
+import { Chart } from 'chart.js';
+import {EnergyDataPoint} from '../../../models/energydatapoint';
+import {SettingsService} from '../../../services/settings.service';
 
 @Component({
   selector: 'app-weekly',
@@ -48,15 +39,6 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
     this.doughnutPowerData = [];
-
-    Chart.register(LineController, BarController,
-      PointElement,
-      BarElement,
-      DoughnutController,
-      ArcElement,
-      LineElement,
-      Legend,
-      CategoryScale, LinearScale, Title);
   }
 
   public ngOnInit() {
@@ -68,12 +50,24 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   }
 
   public refresh(event: any): void {
+    this.clearGraph();
+    this.loadData().then(() => {
+      event.target.complete();
+    });
   }
 
   private refreshView() {
     this.barChart.update();
     this.doughnutChart.update();
     this.lineChart.update();
+  }
+
+  private clearGraph() {
+    this.doughnutPowerData.length = 0;
+    this.lineGasUsage.length = 0;
+    this.labels.length = 0;
+    this.barChartPowerProduction.length = 0;
+    this.barChartPowerUsage.length = 0;
   }
 
   private loadData() {
