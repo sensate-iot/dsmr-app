@@ -215,14 +215,6 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadGraphs() {
-    const todayStart = new Date();
-    const todayEnd = new Date();
-
-    todayStart.setHours(0,0,0);
-    todayStart.setMilliseconds(0);
-
-    todayEnd.setHours(23, 59,59);
-    todayEnd.setMilliseconds(999);
     // @ts-ignore
     this.barChart = new Chart(this.barCanvas.nativeElement, {
       type: 'bar',

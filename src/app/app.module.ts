@@ -8,6 +8,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import {AuthorizationHttpInterceptorService} from './services/authorizationhttpinterceptorservice';
+import {JsonDateInterceptorService} from './services/json-date-interceptor.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -24,7 +25,12 @@ import {AuthorizationHttpInterceptorService} from './services/authorizationhttpi
       provide: HTTP_INTERCEPTORS,
       useClass: AuthorizationHttpInterceptorService,
       multi: true,
-    }
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JsonDateInterceptorService,
+      multi: true
+    },
   ],
   bootstrap: [AppComponent],
 })

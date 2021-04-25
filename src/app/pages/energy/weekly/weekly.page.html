@@ -4,7 +4,7 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>
-      Statistics - Weekly
+      Last week
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -18,7 +18,7 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <app-info-card title="Cost" icon="home-outline" content="{{cost}}"></app-info-card>
+          <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
         </ion-col>
         <ion-col>
           <app-info-card title="Gas Usage" icon="flame-outline" content="{{gasUsageToday}}m3"></app-info-card>
@@ -37,7 +37,7 @@
 
     <ion-card>
       <ion-card-header>
-        Power
+        Energy
       </ion-card-header>
       <ion-card-content>
         <canvas #barCanvas></canvas>
