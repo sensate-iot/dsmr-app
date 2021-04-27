@@ -3,6 +3,7 @@ import {DsmrService} from '../../../services/dsmr.service';
 import { Chart } from 'chart.js';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {SettingsService} from '../../../services/settings.service';
+import {mergeMap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-weekly',
@@ -11,7 +12,7 @@ import {SettingsService} from '../../../services/settings.service';
 })
 export class WeeklyPage implements OnInit, AfterViewInit {
   @ViewChild('barCanvas') barCanvas: ElementRef;
-  @ViewChild('doughnutCanvas') doughnutCanvas: ElementRef;
+  @ViewChild('groupedBarCanvas') groupedBarCanvas: ElementRef;
   @ViewChild('lineCanvas') lineCanvas: ElementRef;
 
   public gasUsageToday: string;
@@ -20,14 +21,17 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   public powerProduction: string;
 
   private barChart: Chart;
-  private doughnutChart: Chart;
+  private groupedBarChart: Chart;
   private lineChart: Chart;
 
   private readonly barChartPowerUsage: number[];
   private readonly barChartPowerProduction: number[];
-  private readonly doughnutPowerData: number[];
   private readonly lineGasUsage: number[];
   private readonly labels: string[];
+
+  private readonly groupedEnergyUsage: number[];
+  private readonly groupedEnergyProduction: number[];
+  private readonly groupedLabels: string[];
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -38,7 +42,9 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     this.labels = [];
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
-    this.doughnutPowerData = [];
+    this.groupedEnergyProduction = [];
+    this.groupedEnergyUsage = [];
+    this.groupedLabels = [];
   }
 
   public ngOnInit() {
@@ -58,16 +64,18 @@ export class WeeklyPage implements OnInit, AfterViewInit {
 
   private refreshView() {
     this.barChart.update();
-    this.doughnutChart.update();
+    this.groupedBarChart.update();
     this.lineChart.update();
   }
 
   private clearGraph() {
-    this.doughnutPowerData.length = 0;
     this.lineGasUsage.length = 0;
     this.labels.length = 0;
     this.barChartPowerProduction.length = 0;
     this.barChartPowerUsage.length = 0;
+    this.groupedEnergyProduction.length = 0;
+    this.groupedEnergyUsage.length = 0;
+    this.groupedLabels.length = 0;
   }
 
   private loadData() {
@@ -76,9 +84,25 @@ export class WeeklyPage implements OnInit, AfterViewInit {
       const endDate = WeeklyPage.getEndToday();
       const device = this.dsmr.getSelectedDevice();
 
-      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').subscribe(result => {
+      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap(result => {
         this.computeCards(result.data);
         this.computeCharts(result.data);
+
+        return this.dsmr.getGroupedPowerData(device.id);
+      })).subscribe(result => {
+        console.log(result);
+
+        result.data.forEach(x => {
+          if (x.hour < 6 || x.hour > 22) {
+            return;
+          }
+
+          this.groupedEnergyProduction.push(x.production / 1000);
+          this.groupedEnergyUsage.push(x.usage / 1000);
+
+          const hour = WeeklyPage.padNumer(x.hour, 2);
+          this.groupedLabels.push(`${hour}:00`);
+        });
 
         this.refreshView();
         resolve();
@@ -108,9 +132,6 @@ export class WeeklyPage implements OnInit, AfterViewInit {
       production += dp.energyProduction / 1000;
       gasUsage += dp.gasFlow;
     });
-
-    this.doughnutPowerData.push(usage);
-    this.doughnutPowerData.push(production);
 
     this.powerUsage = usage.toFixed(2);
     this.powerProduction = production.toFixed(2);
@@ -175,25 +196,45 @@ export class WeeklyPage implements OnInit, AfterViewInit {
       }
     });
 
-    this.doughnutChart = new Chart(this.doughnutCanvas.nativeElement, {
-      type: 'doughnut',
+    this.groupedBarChart = new Chart(this.groupedBarCanvas.nativeElement, {
+      type: 'bar',
       data: {
-        labels: ['Energy Usage', 'Energy Production'],
+        labels: this.groupedLabels,
         datasets: [
           {
-            label: '% of low/high tariff',
-            data: this.doughnutPowerData,
+            yAxisID: 'power',
+            label: 'Usage',
+            data: this.groupedEnergyUsage,
             backgroundColor: [
-              'rgba(255, 99, 132, 0.2)',
+              'rgba(255, 99, 132, 0.2)'
+            ],
+            borderColor: [
+              'rgba(255,99,132,1)'
+            ],
+            borderWidth: 1
+          },
+          {
+            yAxisID: 'power',
+            label: 'Production',
+            data: this.groupedEnergyProduction,
+            backgroundColor: [
               'rgba(99, 255, 132, 0.2)'
             ],
+            borderColor: [
+              'rgba(99,255,132,1)'
+            ],
+            borderWidth: 1
           }
         ]
       },
       options: {
-        plugins: {
-          legend: {
-            display: true,
+        scales: {
+          power: {
+            position: 'left',
+            type: 'linear',
+            ticks: {
+              callback: (tickValue, _) => `${tickValue}kWh`
+            }
           }
         }
       }
@@ -262,5 +303,16 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     todayEnd.setMilliseconds(999);
 
     return todayEnd;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static padNumer(input: number, size: number) {
+    let num = input.toString();
+
+    while (num.length < size) {
+      num = '0' + num;
+    }
+
+    return num;
   }
 }

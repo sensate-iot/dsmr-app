@@ -6,6 +6,7 @@ import {Response} from '../models/response';
 import {EnergyDataPoint} from '../models/energydatapoint';
 import {Device} from '../models/device';
 import {AuthenticationService} from './authentication.service';
+import {GroupedPowerData} from '../models/groupedpowerdata';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,11 @@ export class DsmrService {
   public getLatestData(id: number) {
     const url = `${environment.dsmrApiHost}/aggregates/latest/${id}`;
     return this.http.get<Response<MeterReading>>(url);
+  }
+
+  public getGroupedPowerData(id: number) {
+    const url = `${environment.dsmrApiHost}/aggregates/power/${id}/hour`;
+    return this.http.get<Response<GroupedPowerData[]>>(url);
   }
 
   public getSelectedDevice() {

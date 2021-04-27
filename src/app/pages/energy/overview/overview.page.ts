@@ -1,16 +1,5 @@
 import {Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy} from '@angular/core';
-import {
-  ArcElement,
-  BarController,
-  BarElement,
-  CategoryScale,
-  Chart, DoughnutController, Legend,
-  LinearScale,
-  LineController, LineElement,
-  PointElement,
-  Title
-} from 'chart.js';
-
+import { Chart } from 'chart.js';
 import {DsmrService} from '../../../services/dsmr.service';
 import {Subject} from 'rxjs';
 import {mergeMap, takeUntil} from 'rxjs/operators';
@@ -244,7 +233,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
             position: 'left',
             type: 'linear',
             ticks: {
-              callback: (tickValue, _) => `${tickValue}W`
+              callback: (tickValue, _) => `${tickValue}Wh`
             }
           }
         }
