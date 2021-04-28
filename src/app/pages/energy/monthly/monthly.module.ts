@@ -7,9 +7,9 @@ import { IonicModule } from '@ionic/angular';
 import { MonthlyPageRoutingModule } from './monthly-routing.module';
 
 import { MonthlyPage } from './monthly.page';
-import {InfoCardComponent} from '../../../components/info-card/info-card.component';
 import {CostChartModule} from '../../../components/cost-chart/cost-chart.module';
-import {EnergyBarChartModule} from "../../../components/energy-bar-chart/energy-bar-chart.module";
+import {EnergyBarChartModule} from '../../../components/energy-bar-chart/energy-bar-chart.module';
+import {InfoCardModule} from '../../../components/info-card/info-card.module';
 
 @NgModule({
   imports: [
@@ -18,8 +18,9 @@ import {EnergyBarChartModule} from "../../../components/energy-bar-chart/energy-
     IonicModule,
     MonthlyPageRoutingModule,
     CostChartModule,
-    EnergyBarChartModule
+    EnergyBarChartModule,
+    InfoCardModule
   ],
-  declarations: [MonthlyPage, InfoCardComponent]
+  declarations: [MonthlyPage]
 })
 export class MonthlyPageModule {}

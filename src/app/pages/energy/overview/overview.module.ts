@@ -7,20 +7,18 @@ import { IonicModule } from '@ionic/angular';
 import { OverviewPageRoutingModule } from './overview-routing.module';
 
 import { OverviewPage } from './overview.page';
-import {InfoCardComponent} from '../../../components/info-card/info-card.component';
 import {EnergyBarChartModule} from '../../../components/energy-bar-chart/energy-bar-chart.module';
+import {InfoCardModule} from '../../../components/info-card/info-card.module';
 
 @NgModule({
-    imports: [
-        CommonModule,
-        FormsModule,
-        IonicModule,
-        OverviewPageRoutingModule,
-        EnergyBarChartModule
-    ],
-    exports: [
-        InfoCardComponent
-    ],
-    declarations: [OverviewPage, InfoCardComponent]
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    OverviewPageRoutingModule,
+    EnergyBarChartModule,
+    InfoCardModule
+  ],
+    declarations: [OverviewPage]
 })
 export class OverviewPageModule {}

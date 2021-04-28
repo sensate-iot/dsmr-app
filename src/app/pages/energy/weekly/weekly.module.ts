@@ -6,6 +6,7 @@ import { WeeklyPageRoutingModule } from './weekly-routing.module';
 import { WeeklyPage } from './weekly.page';
 import {CostChartModule} from '../../../components/cost-chart/cost-chart.module';
 import {EnergyBarChartModule} from '../../../components/energy-bar-chart/energy-bar-chart.module';
+import {InfoCardModule} from '../../../components/info-card/info-card.module';
 
 @NgModule({
   imports: [
@@ -14,7 +15,8 @@ import {EnergyBarChartModule} from '../../../components/energy-bar-chart/energy-
     IonicModule,
     WeeklyPageRoutingModule,
     CostChartModule,
-    EnergyBarChartModule
+    EnergyBarChartModule,
+    InfoCardModule
   ],
   declarations: [WeeklyPage]
 })

@@ -85,7 +85,7 @@ export class CostChartComponent implements OnInit, AfterViewInit, OnChanges {
       options: {
         scales: {
           cost: {
-            position: 'right',
+            position: 'left',
             type: 'linear',
             ticks: {
               callback: (tickValue, _) => `€${tickValue}`
