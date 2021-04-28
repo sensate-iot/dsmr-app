@@ -35,14 +35,12 @@
       </ion-row>
     </ion-grid>
 
-    <ion-card>
-      <ion-card-header>
-        Power
-      </ion-card-header>
-      <ion-card-content>
-        <canvas #barCanvas></canvas>
-      </ion-card-content>
-    </ion-card>
+    <app-energy-bar-chart title="Energy"
+                          unit="Wh"
+                          [usageValues]="barChartPowerUsage"
+                          [productionValues]="barChartPowerProduction"
+                          [labels]="energyLabels"
+    ></app-energy-bar-chart>
 
     <ion-card>
       <ion-card-header>

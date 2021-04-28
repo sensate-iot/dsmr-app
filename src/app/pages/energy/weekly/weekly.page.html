@@ -35,21 +35,17 @@
       </ion-row>
     </ion-grid>
 
-    <ion-card>
-      <ion-card-header>
-        Energy per day
-      </ion-card-header>
-      <ion-card-content>
-        <canvas #barCanvas></canvas>
-      </ion-card-content>
-    </ion-card>
+    <app-energy-bar-chart [labels]="labels"
+                          [productionValues]="barChartPowerProduction"
+                          [usageValues]="barChartPowerUsage"
+                          title="Energy per day"
+                          unit="kWh"></app-energy-bar-chart>
 
-    <ion-card>
-      <ion-card-header>Energy by hour</ion-card-header>
-      <ion-card-content>
-        <canvas #groupedBarCanvas></canvas>
-      </ion-card-content>
-    </ion-card>
+    <app-energy-bar-chart [labels]="groupedLabels"
+                          [productionValues]="groupedEnergyProduction"
+                          [usageValues]="groupedEnergyUsage"
+                          title="Energy by hour"
+                          unit="kWh"></app-energy-bar-chart>
 
     <ion-card>
       <ion-card-header>
@@ -59,5 +55,7 @@
         <canvas #lineCanvas></canvas>
       </ion-card-content>
     </ion-card>
+
+    <app-cost-chart [labels]="costLabels" [values]="costValues"></app-cost-chart>
   </div>
 </ion-content>

@@ -4,6 +4,7 @@ import { Chart } from 'chart.js';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {SettingsService} from '../../../services/settings.service';
 import {mergeMap} from 'rxjs/operators';
+import {GroupedPowerData} from '../../../models/groupedpowerdata';
 
 @Component({
   selector: 'app-weekly',
@@ -11,27 +12,27 @@ import {mergeMap} from 'rxjs/operators';
   styleUrls: ['./weekly.page.scss'],
 })
 export class WeeklyPage implements OnInit, AfterViewInit {
-  @ViewChild('barCanvas') barCanvas: ElementRef;
-  @ViewChild('groupedBarCanvas') groupedBarCanvas: ElementRef;
   @ViewChild('lineCanvas') lineCanvas: ElementRef;
 
+  public costLabels: string[];
+  public costValues: number[];
   public gasUsageToday: string;
   public cost: string;
   public powerUsage: string;
   public powerProduction: string;
 
-  private barChart: Chart;
-  private groupedBarChart: Chart;
+  public groupedEnergyUsage: number[];
+  public groupedEnergyProduction: number[];
+  public groupedLabels: string[];
+
+  public barChartPowerUsage: number[];
+  public barChartPowerProduction: number[];
+  public labels: string[];
+
+  private readonly gasLabels: string[];
   private lineChart: Chart;
 
-  private readonly barChartPowerUsage: number[];
-  private readonly barChartPowerProduction: number[];
   private readonly lineGasUsage: number[];
-  private readonly labels: string[];
-
-  private readonly groupedEnergyUsage: number[];
-  private readonly groupedEnergyProduction: number[];
-  private readonly groupedLabels: string[];
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -40,11 +41,14 @@ export class WeeklyPage implements OnInit, AfterViewInit {
                      private readonly settings: SettingsService) {
     this.lineGasUsage = [];
     this.labels = [];
+    this.gasLabels = [];
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
     this.groupedEnergyProduction = [];
     this.groupedEnergyUsage = [];
     this.groupedLabels = [];
+    this.costLabels = [];
+    this.costValues = [];
   }
 
   public ngOnInit() {
@@ -52,7 +56,7 @@ export class WeeklyPage implements OnInit, AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.loadGraphs();
-    this.loadData().then();
+    this.loadData().then(() => { });
   }
 
   public refresh(event: any): void {
@@ -63,19 +67,21 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   }
 
   private refreshView() {
-    this.barChart.update();
-    this.groupedBarChart.update();
     this.lineChart.update();
   }
 
   private clearGraph() {
     this.lineGasUsage.length = 0;
-    this.labels.length = 0;
-    this.barChartPowerProduction.length = 0;
-    this.barChartPowerUsage.length = 0;
-    this.groupedEnergyProduction.length = 0;
-    this.groupedEnergyUsage.length = 0;
-    this.groupedLabels.length = 0;
+    this.gasLabels.length = 0;
+    this.costValues.length = 0;
+    this.costLabels.length = 0;
+
+    this.labels = [];
+    this.barChartPowerProduction = [];
+    this.barChartPowerUsage = [];
+    this.groupedEnergyProduction = [];
+    this.groupedEnergyUsage = [];
+    this.groupedLabels = [];
   }
 
   private loadData() {
@@ -87,39 +93,60 @@ export class WeeklyPage implements OnInit, AfterViewInit {
       this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap(result => {
         this.computeCards(result.data);
         this.computeCharts(result.data);
+        this.computeCostChart(result.data);
 
         return this.dsmr.getGroupedPowerData(device.id);
       })).subscribe(result => {
-        console.log(result);
-
-        result.data.forEach(x => {
-          if (x.hour < 6 || x.hour > 22) {
-            return;
-          }
-
-          this.groupedEnergyProduction.push(x.production / 1000);
-          this.groupedEnergyUsage.push(x.usage / 1000);
-
-          const hour = WeeklyPage.padNumer(x.hour, 2);
-          this.groupedLabels.push(`${hour}:00`);
-        });
+        this.computeGroupedChart(result.data);
 
         this.refreshView();
         resolve();
-      }, error => {
-        console.error(error);
+      }, _ => {
         reject();
       });
     });
   }
 
-  private computeCharts(data: EnergyDataPoint[]) {
-    data.forEach(dp => {
-      this.barChartPowerProduction.push(dp.energyProduction / 1000);
-      this.barChartPowerUsage.push(dp.energyUsage / 1000);
-      this.lineGasUsage.push(dp.gasFlow);
-      this.labels.push(WeeklyPage.weekDays[dp.timestamp.getDay()]);
+  private computeGroupedChart(data: GroupedPowerData[]) {
+    const usage: number [] = [];
+    const production: number[] = [];
+    const labels: string[] = [];
+
+    data.forEach(x => {
+      if (x.hour < 6 || x.hour > 22) {
+        return;
+      }
+
+      production.push(x.production / 1000);
+      usage.push(x.usage / 1000);
+
+      const hour = WeeklyPage.padNumer(x.hour, 2);
+      labels.push(`${hour}:00`);
     });
+
+    this.groupedLabels = labels;
+    this.groupedEnergyProduction = production;
+    this.groupedEnergyUsage = usage;
+  }
+
+  private computeCharts(data: EnergyDataPoint[]) {
+    const usage: number[] = [];
+    const production: number[] = [];
+    const labels: string[] = [];
+
+    data.forEach(dp => {
+      production.push(dp.energyProduction / 1000);
+      usage.push(dp.energyUsage / 1000);
+      this.lineGasUsage.push(dp.gasFlow);
+
+      const day = WeeklyPage.weekDays[dp.timestamp.getDay()];
+      labels.push(day);
+      this.gasLabels.push(day);
+    });
+
+    this.barChartPowerUsage = usage;
+    this.barChartPowerProduction = production;
+    this.labels = labels;
   }
 
   private computeCards(data: EnergyDataPoint[]) {
@@ -150,101 +177,30 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     return cost;
   }
 
+  private computeCostChart(data: EnergyDataPoint[]) {
+    const prices = this.settings.getPrices();
+    const labels: string[] = [];
+    const values: number[] = [];
+
+    data.forEach(x => {
+      let cost = x.energyUsage / 1000 * prices.powerUsage;
+      cost -= x.energyProduction / 1000 * prices.powerProduction;
+      cost += x.gasFlow * prices.gas;
+
+      labels.push(WeeklyPage.weekDays[x.timestamp.getDay()]);
+      values.push(cost);
+    });
+
+    this.costLabels = labels;
+    this.costValues = values;
+  }
+
   private loadGraphs() {
-    // noinspection DuplicatedCode
-    this.barChart = new Chart(this.barCanvas.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: this.labels,
-        datasets: [
-          {
-            yAxisID: 'power',
-            label: 'Usage',
-            data: this.barChartPowerUsage,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(255,99,132,1)'
-            ],
-            borderWidth: 1
-          },
-          {
-            yAxisID: 'power',
-            label: 'Production',
-            data: this.barChartPowerProduction,
-            backgroundColor: [
-              'rgba(99, 255, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,255,132,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          power: {
-            position: 'left',
-            type: 'linear',
-            ticks: {
-              callback: (tickValue, _) => `${tickValue}kWh`
-            }
-          }
-        }
-      }
-    });
-
-    this.groupedBarChart = new Chart(this.groupedBarCanvas.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: this.groupedLabels,
-        datasets: [
-          {
-            yAxisID: 'power',
-            label: 'Usage',
-            data: this.groupedEnergyUsage,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(255,99,132,1)'
-            ],
-            borderWidth: 1
-          },
-          {
-            yAxisID: 'power',
-            label: 'Production',
-            data: this.groupedEnergyProduction,
-            backgroundColor: [
-              'rgba(99, 255, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,255,132,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          power: {
-            position: 'left',
-            type: 'linear',
-            ticks: {
-              callback: (tickValue, _) => `${tickValue}kWh`
-            }
-          }
-        }
-      }
-    });
-
     // @ts-ignore
     this.lineChart = new Chart(this.lineCanvas.nativeElement, {
       type: 'line',
       data: {
-        labels: this.labels,
+        labels: this.gasLabels,
         datasets: [
           {
             label: 'Gas Usage',

@@ -20,7 +20,7 @@ import {JsonDateInterceptorService} from './services/json-date-interceptor.servi
     AppRoutingModule
   ],
   providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthorizationHttpInterceptorService,
@@ -32,6 +32,6 @@ import {JsonDateInterceptorService} from './services/json-date-interceptor.servi
       multi: true
     },
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
 export class AppModule {}

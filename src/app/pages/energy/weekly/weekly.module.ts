@@ -4,16 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { WeeklyPageRoutingModule } from './weekly-routing.module';
 import { WeeklyPage } from './weekly.page';
-import {OverviewPageModule} from '../overview/overview.module';
+import {CostChartModule} from '../../../components/cost-chart/cost-chart.module';
+import {EnergyBarChartModule} from '../../../components/energy-bar-chart/energy-bar-chart.module';
 
 @NgModule({
-    imports: [
-        CommonModule,
-        FormsModule,
-        IonicModule,
-        WeeklyPageRoutingModule,
-        OverviewPageModule
-    ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    WeeklyPageRoutingModule,
+    CostChartModule,
+    EnergyBarChartModule
+  ],
   declarations: [WeeklyPage]
 })
 export class WeeklyPageModule {}

@@ -13,7 +13,6 @@ import {EnvironmentService} from '../../../services/environment.service';
   styleUrls: ['./overview.page.scss'],
 })
 export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('barCanvas') barCanvas: ElementRef;
   @ViewChild('doughnutCanvas') doughnutCanvas: ElementRef;
   @ViewChild('lineCanvas') lineCanvas: ElementRef;
 
@@ -21,18 +20,17 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   public temperature: string;
   public powerUsage: string;
   public powerProduction: string;
+  public barChartPowerUsage: number[];
+  public barChartPowerProduction: number[];
+  public energyLabels: string[];
 
-  private barChart: Chart;
   private doughnutChart: Chart;
   private lineChart: Chart;
 
-  private readonly barChartPowerUsage: number[];
-  private readonly barChartPowerProduction: number[];
   private readonly doughnutPowerData: number[];
   private readonly lineGasUsageToday: number[];
   private readonly lineTemperatureToday: number[];
   private readonly lineGasUsageLabels: string[];
-  private readonly labels: string[];
 
   private readonly destroy$;
 
@@ -45,7 +43,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     this.lineGasUsageLabels = [];
     this.lineGasUsageToday = [];
     this.lineTemperatureToday = [];
-    this.labels = [];
+    this.energyLabels = [];
   }
 
   public ngOnDestroy(): void {
@@ -84,13 +82,14 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private clearGraph() {
-    this.barChartPowerProduction.length = 0;
-    this.barChartPowerUsage.length = 0;
     this.doughnutPowerData.length = 0;
     this.lineGasUsageLabels.length = 0;
     this.lineGasUsageToday.length = 0;
     this.lineTemperatureToday.length = 0;
-    this.labels.length = 0;
+
+    this.energyLabels = [];
+    this.barChartPowerProduction = [];
+    this.barChartPowerUsage = [];
   }
 
   private loadData() {
@@ -109,21 +108,9 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
 
           return this.loadPowerToday();
         }), mergeMap(resp => {
-          const now = moment(new Date()).add(-12, 'hours');
-
-          resp.data.forEach(dp => {
-            const dpMoment = moment(dp.timestamp).local();
-
-            if(dpMoment < now) {
-              return;
-            }
-
-            this.barChartPowerProduction.push(dp.energyProduction);
-            this.barChartPowerUsage.push(dp.energyUsage);
-            this.labels.push(OverviewPage.getHourMinutes(dp.timestamp));
-          });
-
+          this.computePowerChart(resp.data);
           this.computeAndSetUsageToday(resp.data);
+
           return this.loadEnvironmentToday();
         })).subscribe(resp => {
         resp.data.forEach(dp => {
@@ -132,15 +119,36 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
 
         this.refreshView();
         resolve();
-      }, error => {
-        console.error(error);
+      }, _ => {
         reject();
       });
     });
   }
 
+  private computePowerChart(data: EnergyDataPoint[]) {
+    const now = moment(new Date()).add(-12, 'hours');
+    const production: number[] = [];
+    const usage: number[] = [];
+    const labels: string[] = [];
+
+    data.forEach(dp => {
+      const dpMoment = moment(dp.timestamp).local();
+
+      if(dpMoment < now) {
+        return;
+      }
+
+      production.push(dp.energyProduction);
+      usage.push(dp.energyUsage);
+      labels.push(OverviewPage.getHourMinutes(dp.timestamp));
+    });
+
+    this.energyLabels = labels;
+    this.barChartPowerProduction = production;
+    this.barChartPowerUsage = usage;
+  }
+
   private refreshView() {
-    this.barChart.update();
     this.doughnutChart.update();
     this.lineChart.update();
   }
@@ -195,51 +203,6 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadGraphs() {
-    // @ts-ignore
-    this.barChart = new Chart(this.barCanvas.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: this.labels,
-        datasets: [
-          {
-            yAxisID: 'power',
-            label: 'Power Usage',
-            data: this.barChartPowerUsage,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(255,99,132,1)'
-            ],
-            borderWidth: 1
-          },
-          {
-            yAxisID: 'power',
-            label: 'Power Production',
-            data: this.barChartPowerProduction,
-            backgroundColor: [
-              'rgba(99, 255, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,255,132,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          power: {
-            position: 'left',
-            type: 'linear',
-            ticks: {
-              callback: (tickValue, _) => `${tickValue}Wh`
-            }
-          }
-        }
-      }
-    });
-
     this.doughnutChart = new Chart(this.doughnutCanvas.nativeElement, {
       type: 'doughnut',
       data: {

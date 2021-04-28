@@ -23,24 +23,20 @@ class HistoricData {
   styleUrls: ['./monthly.page.scss'],
 })
 export class MonthlyPage implements OnInit, AfterViewInit {
-  @ViewChild('barCanvas') barCanvas: ElementRef;
-  @ViewChild('doughnutCanvas') doughnutCanvas: ElementRef;
   @ViewChild('gasCanvas') gasCanvas: ElementRef;
 
   public gasUsageMonthly: string;
   public cost: string;
   public powerUsage: string;
   public powerProduction: string;
+  public costLabels: string[];
+  public costValues: number[];
+  public barChartPowerUsage: number[];
+  public barChartPowerProduction: number[];
+  public barGasUsage: number[];
+  public labels: string[];
 
-  private barChart: Chart;
-  private doughnutChart: Chart;
   private gasChart: Chart;
-
-  private readonly barChartPowerUsage: number[];
-  private readonly barChartPowerProduction: number[];
-  private readonly doughnutPowerData: number[];
-  private readonly barGasUsage: number[];
-  private readonly labels: string[];
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static months = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
@@ -52,7 +48,8 @@ export class MonthlyPage implements OnInit, AfterViewInit {
     this.labels = [];
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
-    this.doughnutPowerData = [];
+    this.costLabels = [];
+    this.costValues = [];
   }
 
   public ngOnInit() {
@@ -71,17 +68,18 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   private refreshView() {
-    this.barChart.update();
-    this.doughnutChart.update();
+    this.gasChart.data.datasets[0].data = this.barGasUsage;
+    this.gasChart.data.labels = this.labels;
     this.gasChart.update();
   }
 
   private clearGraph() {
-    this.doughnutPowerData.length = 0;
-    this.barGasUsage.length = 0;
-    this.labels.length = 0;
-    this.barChartPowerProduction.length = 0;
-    this.barChartPowerUsage.length = 0;
+    this.costValues.length = 0;
+    this.costLabels.length = 0;
+
+    this.gasChart.data.datasets[0].data = [];
+    this.gasChart.data.labels = [];
+    this.gasChart.update();
   }
 
   private loadData() {
@@ -93,6 +91,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
       this.dsmr.getPowerData(device.id, startDate, endDate, 'day')
         .pipe(mergeMap(result => {
           this.computeCards(result.data);
+          this.computeCostChart(result.data);
           const firstMonthDate = MonthlyPage.addMonths(startDate, -3);
 
           return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
@@ -101,8 +100,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
           this.refreshView();
 
           resolve();
-      }, error => {
-        console.error(error);
+      }, _ => {
         reject();
       });
     });
@@ -128,12 +126,22 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   private renderBarChart(map: Map<number, HistoricData>) {
+    const powerUsage: number[] = [];
+    const powerProduction: number[] = [];
+    const gasUsage: number[] = [];
+    const labels: string[] = [];
+
     map.forEach((data, key) => {
-      this.barChartPowerProduction.push(data.powerProduction);
-      this.barChartPowerUsage.push(data.powerUsage);
-      this.barGasUsage.push(data.gasUsage);
-      this.labels.push(MonthlyPage.months[key]);
+      powerProduction.push(data.powerProduction);
+      powerUsage.push(data.powerUsage);
+      gasUsage.push(data.gasUsage);
+      labels.push(MonthlyPage.months[key]);
     });
+
+    this.barChartPowerProduction = powerProduction;
+    this.barChartPowerUsage = powerUsage;
+    this.barGasUsage = gasUsage;
+    this.labels = labels;
   }
 
   private computeCards(data: EnergyDataPoint[]) {
@@ -146,9 +154,6 @@ export class MonthlyPage implements OnInit, AfterViewInit {
       production += dp.energyProduction / 1000;
       gas += dp.gasFlow;
     });
-
-    this.doughnutPowerData.push(usage);
-    this.doughnutPowerData.push(production);
 
     this.powerUsage = usage.toFixed(2);
     this.powerProduction = production.toFixed(2);
@@ -167,76 +172,25 @@ export class MonthlyPage implements OnInit, AfterViewInit {
     return cost;
   }
 
+  private computeCostChart(data: EnergyDataPoint[]) {
+    const prices = this.settings.getPrices();
+    const labels: string[] = [];
+    const values: number[] = [];
+
+    data.forEach(x => {
+      let cost = x.energyUsage / 1000 * prices.powerUsage;
+      cost -= x.energyProduction / 1000 * prices.powerProduction;
+      cost += x.gasFlow * prices.gas;
+
+      values.push(cost);
+      labels.push(`${MonthlyPage.padNumer(x.timestamp.getDate(), 2)}-${MonthlyPage.padNumer(x.timestamp.getMonth(), 2)}`);
+    });
+
+    this.costLabels = labels;
+    this.costValues = values;
+  }
+
   private loadGraphs() {
-    // noinspection DuplicatedCode
-    this.barChart = new Chart(this.barCanvas.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: this.labels,
-        datasets: [
-          {
-            yAxisID: 'power',
-            label: 'Usage',
-            data: this.barChartPowerUsage,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(255,99,132,1)'
-            ],
-            borderWidth: 1
-          },
-          {
-            yAxisID: 'power',
-            label: 'Production',
-            data: this.barChartPowerProduction,
-            backgroundColor: [
-              'rgba(99, 255, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,255,132,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          power: {
-            position: 'left',
-            type: 'linear',
-            ticks: {
-              callback: (tickValue, _) => `${tickValue}kWh`
-            }
-          }
-        }
-      }
-    });
-
-    this.doughnutChart = new Chart(this.doughnutCanvas.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels: ['Energy Usage', 'Energy Production'],
-        datasets: [
-          {
-            label: '% of low/high tariff',
-            data: this.doughnutPowerData,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)',
-              'rgba(99, 255, 132, 0.2)'
-            ],
-          }
-        ]
-      },
-      options: {
-        plugins: {
-          legend: {
-            display: true,
-          }
-        }
-      }
-    });
-
     this.gasChart = new Chart(this.gasCanvas.nativeElement, {
       type: 'bar',
       data: {
@@ -300,5 +254,16 @@ export class MonthlyPage implements OnInit, AfterViewInit {
       date.setDate(0);
     }
     return date;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static padNumer(input: number, size: number) {
+    let num = input.toString();
+
+    while (num.length < size) {
+      num = '0' + num;
+    }
+
+    return num;
   }
 }
