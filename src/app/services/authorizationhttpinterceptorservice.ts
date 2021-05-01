@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import {HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest} from '@angular/common/http';
-import {EMPTY, Observable, throwError} from 'rxjs';
+import {Observable, throwError} from 'rxjs';
 import {AuthenticationService} from './authentication.service';
-import {catchError} from "rxjs/operators";
-import {Router} from "@angular/router";
+import {catchError} from 'rxjs/operators';
+import {Router} from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +27,7 @@ export class AuthorizationHttpInterceptorService implements HttpInterceptor {
           case 403:
             this.auth.logout();
             this.router.navigate(['/login']).then();
-            return EMPTY;
+            break;
 
           default:
             break;

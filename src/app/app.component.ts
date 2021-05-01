@@ -19,9 +19,9 @@ import {
 })
 export class AppComponent implements OnInit {
   public appPages = [
-    { title: 'Energy', url: '/energy/overview', icon: 'stats-chart' },
-    { title: 'Environment', url: '/environment/overview', icon: 'rainy' },
-    { title: 'Settings', url: '/settings', icon: 'settings' },
+    { title: 'Energy', url: '/energy/overview', icon: 'stats-chart', disabled: false},
+    { title: 'Environment', url: '/environment/overview', icon: 'rainy', disabled: true},
+    { title: 'Settings', url: '/settings', icon: 'settings', disabled: true}
   ];
 
   public name: string;
