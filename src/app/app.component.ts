@@ -50,7 +50,10 @@ export class AppComponent implements OnInit {
   }
 
   public onLogoutClicked() {
-    this.auth.logout();
-    this.router.navigate(['/login']).then();
+    this.auth.logout().subscribe(() => {
+      this.router.navigate(['/login']).then();
+    }, _ => {
+      this.router.navigate(['/login']).then();
+    });
   }
 }

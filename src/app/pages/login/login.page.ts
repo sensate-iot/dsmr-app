@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {AuthenticationService} from '../../services/authentication.service';
 import {Router} from '@angular/router';
 import {ToastController} from '@ionic/angular';
+import {FormControl, NgModel} from "@angular/forms";
 
 @Component({
   selector: 'app-login',
@@ -21,19 +22,29 @@ export class LoginPage implements OnInit {
     this.password = '';
   }
 
-  public onOtpClicked() { }
+  public onOtpClicked() {
+    this.auth.requestOtp(this.email).subscribe(() => {
+      this.createToast('OTP code requested.', 2000);
+    }, _ => {
+      this.createToast('Unable to request OTP.', 2000);
+    });
+  }
 
   public onLoginClicked() {
     this.auth.login(this.email, this.password).subscribe(_ => {
       this.router.navigate(['/energy/overview']).then();
     }, _ => {
-      this.toast.create({
-        message: 'Unable to login.',
-        duration: 2000,
-        position: 'bottom'
-      }).then(result => {
-        result.present().then();
-      });
+      this.createToast('Unable to login.', 2000);
+    });
+  }
+
+  private createToast(msg: string, duration: number) {
+    this.toast.create({
+      message: msg,
+      duration,
+      position: 'bottom'
+    }).then(result => {
+      result.present().then();
     });
   }
 }
