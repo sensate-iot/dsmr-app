@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import {AuthenticationService} from '../../services/authentication.service';
 import {Router} from '@angular/router';
 import {ToastController} from '@ionic/angular';
-import {FormControl, NgModel} from "@angular/forms";
 
 @Component({
   selector: 'app-login',
@@ -10,6 +9,8 @@ import {FormControl, NgModel} from "@angular/forms";
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit {
+  private static emailRegex = /^[a-z0-9!#$%&'*+\/=?^_`{|}~.-]+@[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i;
+
   public email: string;
   public password: string;
 
@@ -23,6 +24,11 @@ export class LoginPage implements OnInit {
   }
 
   public onOtpClicked() {
+    if(this.email.length <= 0) {
+      this.createToast('Email required.', 2000);
+      return;
+    }
+
     this.auth.requestOtp(this.email).subscribe(() => {
       this.createToast('OTP code requested.', 2000);
     }, _ => {
@@ -36,6 +42,10 @@ export class LoginPage implements OnInit {
     }, _ => {
       this.createToast('Unable to login.', 2000);
     });
+  }
+
+  public emailIsValid() {
+    return LoginPage.emailRegex.test(this.email);
   }
 
   private createToast(msg: string, duration: number) {
