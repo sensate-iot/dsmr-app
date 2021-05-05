@@ -1,17 +1,17 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {DsmrService} from '../../../services/dsmr.service';
 import {Chart} from 'chart.js';
-import {SettingsService} from '../../../services/settings.service';
-import {EnergyDataPoint} from '../../../models/energydatapoint';
+import {DsmrService} from '../../services/dsmr.service';
+import {SettingsService} from '../../services/settings.service';
 import {mergeMap} from 'rxjs/operators';
-import {HistoricData} from "../../../models/historicdata";
+import {EnergyDataPoint} from '../../models/energydatapoint';
+import {HistoricData} from '../../models/historicdata';
 
 @Component({
-  selector: 'app-monthly',
-  templateUrl: './monthly.page.html',
-  styleUrls: ['./monthly.page.scss'],
+  selector: 'app-reports',
+  templateUrl: './reports.page.html',
+  styleUrls: ['./reports.page.scss'],
 })
-export class MonthlyPage implements OnInit, AfterViewInit {
+export class ReportsPage implements OnInit, AfterViewInit {
   @ViewChild('gasCanvas') gasCanvas: ElementRef;
 
   public gasUsageMonthly: string;
@@ -24,6 +24,11 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   public barChartPowerProduction: number[];
   public barGasUsage: number[];
   public labels: string[];
+  public selectedMonth: number;
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public fullMonths = ['January', 'February', 'March', 'April', 'May',
+    'June', 'July', 'September', 'October', 'November', 'December'];
 
   private gasChart: Chart;
 
@@ -42,6 +47,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   public ngOnInit() {
+    this.selectedMonth = 3;
   }
 
   public ngAfterViewInit(): void {
@@ -54,6 +60,10 @@ export class MonthlyPage implements OnInit, AfterViewInit {
     this.loadData().then(() => {
       event.target.complete();
     });
+  }
+
+  public onValueChanged(event: any) {
+    console.log(event);
   }
 
   private refreshView() {
@@ -73,22 +83,22 @@ export class MonthlyPage implements OnInit, AfterViewInit {
 
   private loadData() {
     return new Promise((resolve, reject) => {
-      const startDate = MonthlyPage.getFirstOfMonth();
-      const endDate = MonthlyPage.getEndToday();
+      const startDate = ReportsPage.getFirstOfMonth();
+      const endDate = ReportsPage.getEndToday();
       const device = this.dsmr.getSelectedDevice();
 
       this.dsmr.getPowerData(device.id, startDate, endDate, 'day')
         .pipe(mergeMap(result => {
           this.computeCards(result.data);
           this.computeCostChart(result.data);
-          const firstMonthDate = MonthlyPage.addMonths(startDate, -3);
+          const firstMonthDate = ReportsPage.addMonths(startDate, -3);
 
           return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
         })).subscribe(result => {
-          this.computeCharts(result.data);
-          this.refreshView();
+        this.computeCharts(result.data);
+        this.refreshView();
 
-          resolve();
+        resolve();
       }, _ => {
         reject();
       });
@@ -124,7 +134,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
       powerProduction.push(data.powerProduction);
       powerUsage.push(data.powerUsage);
       gasUsage.push(data.gasUsage);
-      labels.push(MonthlyPage.months[key]);
+      labels.push(ReportsPage.months[key]);
     });
 
     this.barChartPowerProduction = powerProduction;
@@ -172,7 +182,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
       cost += x.gasFlow * prices.gas;
 
       values.push(cost);
-      labels.push(`${MonthlyPage.padNumer(x.timestamp.getDate(), 2)}-${MonthlyPage.padNumer(x.timestamp.getMonth(), 2)}`);
+      labels.push(`${ReportsPage.padNumer(x.timestamp.getDate(), 2)}-${ReportsPage.padNumer(x.timestamp.getMonth(), 2)}`);
     });
 
     this.costLabels = labels;

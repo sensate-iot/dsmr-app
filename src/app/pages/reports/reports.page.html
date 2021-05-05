@@ -1,0 +1,64 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>
+      Last week
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-list-header>
+      <ion-label>Report time range</ion-label>
+    </ion-list-header>
+
+    <ion-item>
+      <ion-label>Month</ion-label>
+      <ion-select [value]="selectedMonth" okText="Okay" cancelText="Dismiss" (ionChange)="onValueChanged($event)" >
+        <ion-select-option *ngFor="let m of fullMonths; let idx = index" [value]="idx">{{m}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+  </ion-list>
+  <div class="ion-padding">
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
+        </ion-col>
+        <ion-col>
+          <app-info-card title="Gas Usage" icon="flame-outline" content="{{gasUsageMonthly}}m3"></app-info-card>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col>
+          <app-info-card title="Usage" icon="flash-outline" content="{{powerUsage}}kWh"></app-info-card>
+        </ion-col>
+        <ion-col>
+          <app-info-card title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <app-energy-bar-chart title="Energy"
+                          unit="kWh"
+                          [labels]="labels"
+                          [productionValues]="barChartPowerProduction"
+                          [usageValues]="barChartPowerUsage"></app-energy-bar-chart>
+
+    <ion-card>
+      <ion-card-header>
+        Gas usage
+      </ion-card-header>
+      <ion-card-content>
+        <canvas #gasCanvas></canvas>
+      </ion-card-content>
+    </ion-card>
+
+    <app-cost-chart [labels]="costLabels" [values]="costValues"></app-cost-chart>
+  </div>
+</ion-content>

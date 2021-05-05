@@ -20,8 +20,8 @@ import {
 export class AppComponent implements OnInit {
   public appPages = [
     { title: 'Energy', url: '/energy/overview', icon: 'stats-chart', disabled: false},
-    { title: 'Environment', url: '/environment/overview', icon: 'rainy', disabled: true},
-    { title: 'Settings', url: '/settings', icon: 'settings', disabled: true}
+    { title: 'Reports', url: '/reports', icon: 'folder-open', disabled: true},
+    { title: 'Settings', url: '/settings/prices', icon: 'settings', disabled: true}
   ];
 
   public name: string;

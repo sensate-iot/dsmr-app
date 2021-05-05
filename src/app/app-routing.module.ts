@@ -16,8 +16,12 @@ const routes: Routes = [
     loadChildren: () => import('./pages/energy/energy.module').then( m => m.EnergyPageModule)
   },
   {
-    path: 'environment',
-    loadChildren: () => import('./pages/environment/environment.module').then( m => m.EnvironmentPageModule)
+    path: 'settings',
+    loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule)
+  },
+  {
+    path: 'reports',
+    loadChildren: () => import('./pages/reports/reports.module').then( m => m.ReportsPageModule)
   },
 ];
 
