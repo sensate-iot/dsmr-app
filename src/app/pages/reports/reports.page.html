@@ -4,17 +4,13 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>
-      Last week
+      Monthly Report
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-list>
-    <ion-list-header>
-      <ion-label>Report time range</ion-label>
-    </ion-list-header>
-
     <ion-item>
       <ion-label>Month</ion-label>
       <ion-select [value]="selectedMonth" okText="Okay" cancelText="Dismiss" (ionChange)="onValueChanged($event)" >
@@ -49,6 +45,12 @@
                           [labels]="labels"
                           [productionValues]="barChartPowerProduction"
                           [usageValues]="barChartPowerUsage"></app-energy-bar-chart>
+
+    <app-energy-bar-chart [labels]="groupedLabels"
+                          [productionValues]="groupedEnergyProduction"
+                          [usageValues]="groupedEnergyUsage"
+                          title="Energy by hour"
+                          unit="kWh"></app-energy-bar-chart>
 
     <ion-card>
       <ion-card-header>

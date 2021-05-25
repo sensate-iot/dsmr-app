@@ -11,3 +11,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Weekly overview
 - Monthly overview
 - Authentication and device selection
+- Reports page

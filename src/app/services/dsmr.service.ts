@@ -33,6 +33,13 @@ export class DsmrService {
     return this.http.get<Response<GroupedPowerData[]>>(url);
   }
 
+  public getGroupedPowerDataBetween(id: number, start: Date, end: Date) {
+    const startDate = start.toISOString();
+    const endDate = end.toISOString();
+    const url = `${environment.dsmrApiHost}/aggregates/power/${id}/hour?start=${startDate}&end=${endDate}`;
+    return this.http.get<Response<GroupedPowerData[]>>(url);
+  }
+
   public getSelectedDevice() {
     const selected = DsmrService.getSelectedDeviceFromStorage();
 

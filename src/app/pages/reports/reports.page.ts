@@ -5,6 +5,7 @@ import {SettingsService} from '../../services/settings.service';
 import {mergeMap} from 'rxjs/operators';
 import {EnergyDataPoint} from '../../models/energydatapoint';
 import {HistoricData} from '../../models/historicdata';
+import {GroupedPowerData} from '../../models/groupedpowerdata';
 
 @Component({
   selector: 'app-reports',
@@ -26,9 +27,15 @@ export class ReportsPage implements OnInit, AfterViewInit {
   public labels: string[];
   public selectedMonth: number;
 
+  public groupedEnergyUsage: number[];
+  public groupedEnergyProduction: number[];
+  public groupedLabels: string[];
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   public fullMonths = ['January', 'February', 'March', 'April', 'May',
     'June', 'July', 'September', 'October', 'November', 'December'];
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   private gasChart: Chart;
 
@@ -44,10 +51,14 @@ export class ReportsPage implements OnInit, AfterViewInit {
     this.barChartPowerUsage = [];
     this.costLabels = [];
     this.costValues = [];
+    this.groupedEnergyProduction = [];
+    this.groupedEnergyUsage = [];
+    this.groupedLabels = [];
   }
 
   public ngOnInit() {
-    this.selectedMonth = 3;
+    const now = new Date();
+    this.selectedMonth = now.getMonth() - 1;
   }
 
   public ngAfterViewInit(): void {
@@ -56,14 +67,19 @@ export class ReportsPage implements OnInit, AfterViewInit {
   }
 
   public refresh(event: any): void {
-    this.clearGraph();
-    this.loadData().then(() => {
+    this.internalRefresh().then(() => {
       event.target.complete();
     });
   }
 
-  public onValueChanged(event: any) {
-    console.log(event);
+  public async onValueChanged(event: any) {
+    this.selectedMonth = event.detail.value;
+    await this.internalRefresh();
+  }
+
+  private internalRefresh() {
+    this.clearGraph();
+    return this.loadData();
   }
 
   private refreshView() {
@@ -79,23 +95,30 @@ export class ReportsPage implements OnInit, AfterViewInit {
     this.gasChart.data.datasets[0].data = [];
     this.gasChart.data.labels = [];
     this.gasChart.update();
+
+    this.groupedEnergyProduction = [];
+    this.groupedEnergyUsage = [];
+    this.groupedLabels = [];
   }
 
   private loadData() {
     return new Promise((resolve, reject) => {
-      const startDate = ReportsPage.getFirstOfMonth();
-      const endDate = ReportsPage.getEndToday();
+      const startDate = this.getFirstOfMonth();
+      const endDate = this.getEndOfMonth();
       const device = this.dsmr.getSelectedDevice();
 
-      this.dsmr.getPowerData(device.id, startDate, endDate, 'day')
-        .pipe(mergeMap(result => {
-          this.computeCards(result.data);
-          this.computeCostChart(result.data);
-          const firstMonthDate = ReportsPage.addMonths(startDate, -3);
+      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap(result => {
+        this.computeCards(result.data);
+        this.computeCostChart(result.data);
 
-          return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
-        })).subscribe(result => {
-        this.computeCharts(result.data);
+        return this.dsmr.getGroupedPowerDataBetween(device.id, startDate, endDate);
+      }), mergeMap(result => {
+        this.computeGroupedChart(result.data);
+
+        const firstMonthDate = ReportsPage.addMonths(startDate, -3);
+        return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
+      })).subscribe(result => {
+        this.computeOverviewCharts(result.data);
         this.refreshView();
 
         resolve();
@@ -105,7 +128,7 @@ export class ReportsPage implements OnInit, AfterViewInit {
     });
   }
 
-  private computeCharts(data: EnergyDataPoint[]) {
+  private computeOverviewCharts(data: EnergyDataPoint[]) {
     const history = new Map<number, HistoricData>();
 
     data.forEach(dp => {
@@ -189,6 +212,28 @@ export class ReportsPage implements OnInit, AfterViewInit {
     this.costValues = values;
   }
 
+  private computeGroupedChart(data: GroupedPowerData[]) {
+    const usage: number [] = [];
+    const production: number[] = [];
+    const labels: string[] = [];
+
+    data.forEach(x => {
+      if (x.hour < 6 || x.hour > 22) {
+        return;
+      }
+
+      production.push(x.production / 1000);
+      usage.push(x.usage / 1000);
+
+      const hour = ReportsPage.padNumer(x.hour, 2);
+      labels.push(`${hour}:00`);
+    });
+
+    this.groupedLabels = labels;
+    this.groupedEnergyProduction = production;
+    this.groupedEnergyUsage = usage;
+  }
+
   private loadGraphs() {
     this.gasChart = new Chart(this.gasCanvas.nativeElement, {
       type: 'bar',
@@ -224,23 +269,27 @@ export class ReportsPage implements OnInit, AfterViewInit {
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  private static getFirstOfMonth() {
+  private getFirstOfMonth() {
     const todayStart = new Date();
 
     todayStart.setHours(0,0,0, 0);
     todayStart.setDate(1);
+    todayStart.setMonth(this.selectedMonth);
 
     return todayStart;
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
-  private static getEndToday() {
-    const todayEnd = new Date();
+  private getEndOfMonth() {
+    const today = new Date();
+    const end = new Date(today.getFullYear(), this.selectedMonth + 1, 0);
 
-    todayEnd.setHours(23, 59,59);
-    todayEnd.setMilliseconds(999);
+    end.setHours(23);
+    end.setMinutes(59);
+    end.setSeconds(59);
+    end.setMilliseconds(999);
 
-    return todayEnd;
+    return end;
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
