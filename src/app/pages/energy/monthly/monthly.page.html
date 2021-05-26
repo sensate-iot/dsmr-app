@@ -41,14 +41,8 @@
                           [productionValues]="barChartPowerProduction"
                           [usageValues]="barChartPowerUsage"></app-energy-bar-chart>
 
-    <ion-card>
-      <ion-card-header>
-        Gas usage
-      </ion-card-header>
-      <ion-card-content>
-        <canvas #gasCanvas></canvas>
-      </ion-card-content>
-    </ion-card>
+    <app-gas-chart [labels]="labels"
+                   [barGasUsage]="barGasUsage"></app-gas-chart>
 
     <app-cost-chart [labels]="costLabels" [values]="costValues"></app-cost-chart>
   </div>

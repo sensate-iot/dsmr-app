@@ -1,10 +1,9 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {DsmrService} from '../../../services/dsmr.service';
-import {Chart} from 'chart.js';
 import {SettingsService} from '../../../services/settings.service';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {mergeMap} from 'rxjs/operators';
-import {HistoricData} from "../../../models/historicdata";
+import {HistoricData} from '../../../models/historicdata';
 
 @Component({
   selector: 'app-monthly',
@@ -12,7 +11,6 @@ import {HistoricData} from "../../../models/historicdata";
   styleUrls: ['./monthly.page.scss'],
 })
 export class MonthlyPage implements OnInit, AfterViewInit {
-  @ViewChild('gasCanvas') gasCanvas: ElementRef;
 
   public gasUsageMonthly: string;
   public cost: string;
@@ -24,8 +22,6 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   public barChartPowerProduction: number[];
   public barGasUsage: number[];
   public labels: string[];
-
-  private gasChart: Chart;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static months = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
@@ -45,7 +41,6 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.loadGraphs();
     this.loadData().then();
   }
 
@@ -56,19 +51,12 @@ export class MonthlyPage implements OnInit, AfterViewInit {
     });
   }
 
-  private refreshView() {
-    this.gasChart.data.datasets[0].data = this.barGasUsage;
-    this.gasChart.data.labels = this.labels;
-    this.gasChart.update();
-  }
-
   private clearGraph() {
     this.costValues.length = 0;
     this.costLabels.length = 0;
 
-    this.gasChart.data.datasets[0].data = [];
-    this.gasChart.data.labels = [];
-    this.gasChart.update();
+    this.labels = [];
+    this.barGasUsage = [];
   }
 
   private loadData() {
@@ -86,8 +74,6 @@ export class MonthlyPage implements OnInit, AfterViewInit {
           return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
         })).subscribe(result => {
           this.computeCharts(result.data);
-          this.refreshView();
-
           resolve();
       }, _ => {
         reject();
@@ -117,20 +103,16 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   private renderBarChart(map: Map<number, HistoricData>) {
     const powerUsage: number[] = [];
     const powerProduction: number[] = [];
-    const gasUsage: number[] = [];
-    const labels: string[] = [];
 
     map.forEach((data, key) => {
       powerProduction.push(data.powerProduction);
       powerUsage.push(data.powerUsage);
-      gasUsage.push(data.gasUsage);
-      labels.push(MonthlyPage.months[key]);
+      this.barGasUsage.push(data.gasUsage);
+      this.labels.push(MonthlyPage.months[key]);
     });
 
     this.barChartPowerProduction = powerProduction;
     this.barChartPowerUsage = powerUsage;
-    this.barGasUsage = gasUsage;
-    this.labels = labels;
   }
 
   private computeCards(data: EnergyDataPoint[]) {
@@ -177,40 +159,6 @@ export class MonthlyPage implements OnInit, AfterViewInit {
 
     this.costLabels = labels;
     this.costValues = values;
-  }
-
-  private loadGraphs() {
-    this.gasChart = new Chart(this.gasCanvas.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: this.labels,
-        datasets: [
-          {
-            yAxisID: 'gas',
-            label: 'Gas Usage',
-            data: this.barGasUsage,
-            backgroundColor: [
-              'rgba(99, 99, 255, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,99,255,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          gas: {
-            position: 'left',
-            type: 'linear',
-            ticks: {
-              callback: (tickValue, _) => `${tickValue}m3`
-            }
-          }
-        }
-      }
-    });
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering

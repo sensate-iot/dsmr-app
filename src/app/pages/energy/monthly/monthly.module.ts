@@ -10,17 +10,19 @@ import { MonthlyPage } from './monthly.page';
 import {CostChartModule} from '../../../components/cost-chart/cost-chart.module';
 import {EnergyBarChartModule} from '../../../components/energy-bar-chart/energy-bar-chart.module';
 import {InfoCardModule} from '../../../components/info-card/info-card.module';
+import {GasChartModule} from "../../../components/gas-chart/gas-chart.module";
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    MonthlyPageRoutingModule,
-    CostChartModule,
-    EnergyBarChartModule,
-    InfoCardModule
-  ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        MonthlyPageRoutingModule,
+        CostChartModule,
+        EnergyBarChartModule,
+        InfoCardModule,
+        GasChartModule
+    ],
   declarations: [MonthlyPage]
 })
 export class MonthlyPageModule {}

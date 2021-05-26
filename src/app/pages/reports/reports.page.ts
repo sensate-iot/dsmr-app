@@ -1,5 +1,4 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {Chart} from 'chart.js';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {DsmrService} from '../../services/dsmr.service';
 import {SettingsService} from '../../services/settings.service';
 import {mergeMap} from 'rxjs/operators';
@@ -13,8 +12,6 @@ import {GroupedPowerData} from '../../models/groupedpowerdata';
   styleUrls: ['./reports.page.scss'],
 })
 export class ReportsPage implements OnInit, AfterViewInit {
-  @ViewChild('gasCanvas') gasCanvas: ElementRef;
-
   public gasUsageMonthly: string;
   public cost: string;
   public powerUsage: string;
@@ -34,10 +31,6 @@ export class ReportsPage implements OnInit, AfterViewInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   public fullMonths = ['January', 'February', 'March', 'April', 'May',
     'June', 'July', 'September', 'October', 'November', 'December'];
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  private static weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-  private gasChart: Chart;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static months = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
@@ -62,7 +55,6 @@ export class ReportsPage implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    this.loadGraphs();
     this.loadData().then();
   }
 
@@ -82,20 +74,12 @@ export class ReportsPage implements OnInit, AfterViewInit {
     return this.loadData();
   }
 
-  private refreshView() {
-    this.gasChart.data.datasets[0].data = this.barGasUsage;
-    this.gasChart.data.labels = this.labels;
-    this.gasChart.update();
-  }
-
   private clearGraph() {
     this.costValues.length = 0;
     this.costLabels.length = 0;
 
-    this.gasChart.data.datasets[0].data = [];
-    this.gasChart.data.labels = [];
-    this.gasChart.update();
-
+    this.labels = [];
+    this.barGasUsage = [];
     this.groupedEnergyProduction = [];
     this.groupedEnergyUsage = [];
     this.groupedLabels = [];
@@ -119,7 +103,6 @@ export class ReportsPage implements OnInit, AfterViewInit {
         return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
       })).subscribe(result => {
         this.computeOverviewCharts(result.data);
-        this.refreshView();
 
         resolve();
       }, _ => {
@@ -205,7 +188,7 @@ export class ReportsPage implements OnInit, AfterViewInit {
       cost += x.gasFlow * prices.gas;
 
       values.push(cost);
-      labels.push(`${ReportsPage.padNumer(x.timestamp.getDate(), 2)}-${ReportsPage.padNumer(x.timestamp.getMonth(), 2)}`);
+      labels.push(`${ReportsPage.padNumer(x.timestamp.getDate(), 2)}-${ReportsPage.padNumer(x.timestamp.getMonth() + 1, 2)}`);
     });
 
     this.costLabels = labels;
@@ -232,40 +215,6 @@ export class ReportsPage implements OnInit, AfterViewInit {
     this.groupedLabels = labels;
     this.groupedEnergyProduction = production;
     this.groupedEnergyUsage = usage;
-  }
-
-  private loadGraphs() {
-    this.gasChart = new Chart(this.gasCanvas.nativeElement, {
-      type: 'bar',
-      data: {
-        labels: this.labels,
-        datasets: [
-          {
-            yAxisID: 'gas',
-            label: 'Gas Usage',
-            data: this.barGasUsage,
-            backgroundColor: [
-              'rgba(99, 99, 255, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,99,255,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
-      },
-      options: {
-        scales: {
-          gas: {
-            position: 'left',
-            type: 'linear',
-            ticks: {
-              callback: (tickValue, _) => `${tickValue}m3`
-            }
-          }
-        }
-      }
-    });
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering

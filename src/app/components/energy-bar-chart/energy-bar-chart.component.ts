@@ -36,8 +36,8 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
     this.internalLabels.length = 0;
     this.internalProductionValues.length = 0;
     this.internalUsageValues.length = 0;
-    this.copy();
 
+    this.copy();
     this.barChart.update();
   }
 
