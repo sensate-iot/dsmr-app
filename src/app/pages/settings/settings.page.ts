@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-settings',
@@ -7,9 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SettingsPage implements OnInit {
 
-  constructor() { }
-
-  ngOnInit() {
+  public constructor(router: Router) {
+    if(router.url === '/' || router.url === '/settings') {
+      router.navigate(['/settings/prices']).then();
+    }
   }
 
+  public ngOnInit() {
+  }
 }

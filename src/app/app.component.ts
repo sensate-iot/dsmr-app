@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
   public appPages = [
     { title: 'Energy', url: '/energy/overview', icon: 'stats-chart', disabled: false},
     { title: 'Reports', url: '/reports', icon: 'folder-open', disabled: false},
-    { title: 'Settings', url: '/settings/prices', icon: 'settings', disabled: true}
+    { title: 'Settings', url: '/settings/prices', icon: 'settings', disabled: false}
   ];
 
   public name: string;

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {PriceInfo, Settings} from '../models/settings';
+import set = Reflect.set;
 
 @Injectable({
   providedIn: 'root'
@@ -21,6 +22,17 @@ export class SettingsService {
     }
 
     return settings.prices;
+  }
+
+  public setPrices(prices: PriceInfo) {
+    let settings = this.getSettings();
+
+    if(settings == null) {
+      settings = new Settings();
+    }
+
+    settings.prices = prices;
+    localStorage.setItem('settings', JSON.stringify(settings));
   }
 
   private getSettings(): Settings {

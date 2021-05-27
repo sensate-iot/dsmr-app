@@ -3,9 +3,25 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Settings</ion-title>
+    <ion-title>Settings - Energy prices</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-card>
+    <ion-card-content>
+      Below you can find the prices we are using for cost analysis.
+      If your prices differ, you can edit each price using the button
+      to the right of the price.
+    </ion-card-content>
+  </ion-card>
+  <app-price-row (update)="onUpdate('powerUsage', $event)"
+                 name="Electricity usage"
+                 [value]="eUsagePrice"></app-price-row>
+  <app-price-row (update)="onUpdate('powerProduction', $event)"
+                 name="Electricity production"
+                 [value]="eProductionPrice"></app-price-row>
+  <app-price-row (update)="onUpdate('gas', $event)"
+                 name="Gas usage"
+                 [value]="gasUsagePrice"></app-price-row>
 </ion-content>
