@@ -103,14 +103,18 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   private renderBarChart(map: Map<number, HistoricData>) {
     const powerUsage: number[] = [];
     const powerProduction: number[] = [];
+    const gasUsage: number[] = [];
+    const labels: string[] = [];
 
     map.forEach((data, key) => {
       powerProduction.push(data.powerProduction);
       powerUsage.push(data.powerUsage);
-      this.barGasUsage.push(data.gasUsage);
-      this.labels.push(MonthlyPage.months[key]);
+      gasUsage.push(data.gasUsage);
+      labels.push(MonthlyPage.months[key]);
     });
 
+    this.labels = labels;
+    this.barGasUsage = gasUsage;
     this.barChartPowerProduction = powerProduction;
     this.barChartPowerUsage = powerUsage;
   }
