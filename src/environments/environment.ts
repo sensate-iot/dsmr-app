@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  //dsmrApiHost: 'http://localhost:54161/dsmr/v1'
-  dsmrApiHost: 'https://api.sensateiot.com/dsmr/v1'
+  dsmrApiHost: 'http://localhost:54161/dsmr/v1'
+  //dsmrApiHost: 'https://api.sensateiot.com/dsmr/v1'
 };
 
 /*

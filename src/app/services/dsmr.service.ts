@@ -7,6 +7,7 @@ import {EnergyDataPoint} from '../models/energydatapoint';
 import {Device} from '../models/device';
 import {AuthenticationService} from './authentication.service';
 import {GroupedPowerData} from '../models/groupedpowerdata';
+import {EnergyUsage} from "../models/energyusage";
 
 @Injectable({
   providedIn: 'root'
@@ -38,6 +39,13 @@ export class DsmrService {
     const endDate = end.toISOString();
     const url = `${environment.dsmrApiHost}/aggregates/power/${id}/hour?start=${startDate}&end=${endDate}`;
     return this.http.get<Response<GroupedPowerData[]>>(url);
+  }
+
+  public getEnergyUsage(id: number, start: Date, end: Date) {
+    const startDate = start.toISOString();
+    const endDate = end.toISOString();
+    const url = `${environment.dsmrApiHost}/aggregates/energy/${id}?start=${startDate}&end=${endDate}`;
+    return this.http.get<Response<EnergyUsage>>(url);
   }
 
   public getSelectedDevice() {

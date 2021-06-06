@@ -5,6 +5,7 @@ import {mergeMap} from 'rxjs/operators';
 import {EnergyDataPoint} from '../../models/energydatapoint';
 import {HistoricData} from '../../models/historicdata';
 import {GroupedPowerData} from '../../models/groupedpowerdata';
+import {EnergyUsage} from '../../models/energyusage';
 
 @Component({
   selector: 'app-reports',
@@ -92,9 +93,10 @@ export class ReportsPage implements OnInit, AfterViewInit {
       const device = this.dsmr.getSelectedDevice();
 
       this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap(result => {
-        this.computeCards(result.data);
         this.computeCostChart(result.data);
-
+        return this.dsmr.getEnergyUsage(device.id, startDate, endDate);
+      }), mergeMap(result => {
+        this.computeCards(result.data);
         return this.dsmr.getGroupedPowerDataBetween(device.id, startDate, endDate);
       }), mergeMap(result => {
         this.computeGroupedChart(result.data);
@@ -149,30 +151,20 @@ export class ReportsPage implements OnInit, AfterViewInit {
     this.labels = labels;
   }
 
-  private computeCards(data: EnergyDataPoint[]) {
-    let usage = 0;
-    let production = 0;
-    let gas = 0;
-
-    data.forEach(dp => {
-      usage += dp.energyUsage / 1000;
-      production += dp.energyProduction / 1000;
-      gas += dp.gasFlow;
-    });
-
-    this.powerUsage = usage.toFixed(2);
-    this.powerProduction = production.toFixed(2);
-    this.gasUsageMonthly = gas.toFixed(2);
-    this.cost = this.computeCost(usage, production, gas).toFixed(2);
+  private computeCards(data: EnergyUsage) {
+    this.powerUsage = data.energyUsage.toFixed(2);
+    this.powerProduction = data.energyProduction.toFixed(2);
+    this.gasUsageMonthly = data.gasUsage?.toFixed(2);
+    this.cost = this.computeCost(data).toFixed(2);
   }
 
-  private computeCost(usage: number, production: number, gas: number) {
+  private computeCost(usage: EnergyUsage) {
     const prices = this.settings.getPrices();
     let cost = 0;
 
-    cost += prices.powerUsage * usage;
-    cost += prices.gas * gas;
-    cost -= prices.powerProduction * production;
+    cost += prices.powerUsage * usage.energyUsage;
+    cost += prices.gas * usage.gasUsage;
+    cost -= prices.powerProduction * usage.energyProduction;
 
     return cost;
   }
