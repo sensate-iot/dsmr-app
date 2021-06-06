@@ -69,14 +69,14 @@ export class MonthlyPage implements OnInit, AfterViewInit {
       this.dsmr.getPowerData(device.id, startDate, endDate, 'day')
         .pipe(mergeMap(result => {
           this.computeCostChart(result.data);
+          return this.dsmr.getEnergyUsage(device.id, startDate, endDate);
+        }),mergeMap(result => {
+          this.computeCards(result.data);
           const firstMonthDate = MonthlyPage.addMonths(startDate, -3);
 
           return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
-        }), mergeMap(result => {
-          this.computeCharts(result.data);
-          return this.dsmr.getEnergyUsage(device.id, startDate, endDate);
         })).subscribe(result => {
-          this.computeCards(result.data);
+          this.computeCharts(result.data);
           resolve();
       }, _ => {
         reject();
