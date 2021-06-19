@@ -6,6 +6,7 @@ import {mergeMap, takeUntil} from 'rxjs/operators';
 import * as moment from 'moment';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {EnvironmentService} from '../../../services/environment.service';
+import {Device} from '../../../models/device';
 
 @Component({
   selector: 'app-overview',
@@ -20,17 +21,19 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   public temperature: string;
   public powerUsage: string;
   public powerProduction: string;
+  public outsideAirTemperature: string;
   public barChartPowerUsage: number[];
   public barChartPowerProduction: number[];
   public energyLabels: string[];
+  public device: Device;
 
   private doughnutChart: Chart;
   private lineChart: Chart;
 
   private readonly doughnutPowerData: number[];
-  private readonly lineGasUsageToday: number[];
+  private readonly lineEnergyUsageToday: number[];
   private readonly lineTemperatureToday: number[];
-  private readonly lineGasUsageLabels: string[];
+  private readonly energyUsageLabels: string[];
 
   private readonly destroy$;
 
@@ -40,8 +43,8 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
     this.doughnutPowerData = [];
-    this.lineGasUsageLabels = [];
-    this.lineGasUsageToday = [];
+    this.energyUsageLabels = [];
+    this.lineEnergyUsageToday = [];
     this.lineTemperatureToday = [];
     this.energyLabels = [];
   }
@@ -52,6 +55,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    this.device = this.dsmr.getSelectedDevice();
   }
 
   public ngAfterViewInit() {
@@ -70,21 +74,23 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   private loadPowerToday() {
     const todayStart = OverviewPage.getStartToday();
     const todayEnd = OverviewPage.getEndToday();
+    const device = this.dsmr.getSelectedDevice();
 
-    return this.dsmr.getPowerData(1, todayStart, todayEnd, 'hour');
+    return this.dsmr.getPowerData(device.id, todayStart, todayEnd, 'hour');
   }
 
   private loadEnvironmentToday() {
     const todayStart = OverviewPage.getStartToday();
     const todayEnd = OverviewPage.getEndToday();
+    const device = this.dsmr.getSelectedDevice();
 
-    return this.env.getEnvironmentData(1, todayStart, todayEnd, 'hour');
+    return this.env.getEnvironmentData(device.id, todayStart, todayEnd, 'hour');
   }
 
   private clearGraph() {
     this.doughnutPowerData.length = 0;
-    this.lineGasUsageLabels.length = 0;
-    this.lineGasUsageToday.length = 0;
+    this.energyUsageLabels.length = 0;
+    this.lineEnergyUsageToday.length = 0;
     this.lineTemperatureToday.length = 0;
 
     this.energyLabels = [];
@@ -102,6 +108,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
 
           this.temperature = data.temperature.toFixed(2);
           this.powerUsage = data.powerUsage.toFixed(2);
+          this.outsideAirTemperature = data.outsideAirTemperature.toFixed(2);
           this.powerProduction = data.powerProduction.toFixed(2);
           const gas = data.gasFlow * 1000;
           this.gasUsageToday = gas.toFixed(2);
@@ -163,8 +170,13 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
       gasUsage += dp.gasFlow / 1000.0;
       energyUsage += dp.energyUsage;
 
-      this.lineGasUsageToday.push(dp.gasFlow);
-      this.lineGasUsageLabels.push(OverviewPage.getHourMinutes(dp.timestamp));
+      if(this.device.hasGasSensor) {
+        this.lineEnergyUsageToday.push(dp.gasFlow);
+      } else {
+        this.lineEnergyUsageToday.push(dp.energyUsage);
+      }
+
+      this.energyUsageLabels.push(OverviewPage.getHourMinutes(dp.timestamp));
 
       if(dp.tariff === 'Normal') {
         normalTariffTotal += dp.energyUsage;
@@ -227,14 +239,22 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
+    let labelName = 'Energy';
+    let unit = 'kWh';
+
+    if(this.device.hasGasSensor) {
+      labelName = 'Gas';
+      unit = 'L/min';
+    }
+
     // @ts-ignore
     this.lineChart = new Chart(this.lineCanvas.nativeElement, {
       type: 'line',
       data: {
-        labels: this.lineGasUsageLabels,
+        labels: this.energyUsageLabels,
         datasets: [
           {
-            label: 'Gas Usage',
+            label: labelName,
             fill: false,
             backgroundColor: 'rgba(75,192,192,0.4)',
             borderColor: 'rgba(75,192,192,1)',
@@ -251,9 +271,9 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
             pointHoverBorderWidth: 2,
             pointRadius: 1,
             pointHitRadius: 10,
-            data: this.lineGasUsageToday,
+            data: this.lineEnergyUsageToday,
             spanGaps: false,
-            yAxisID: 'gas'
+            yAxisID: 'energy'
           },
           {
             label: 'Temperature',
@@ -281,11 +301,11 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
       },
       options: {
         scales: {
-          gas: {
+          energy: {
             position: 'left',
             type: 'linear',
             ticks: {
-              callback: (tickValue, _) => `${tickValue}L/min`
+              callback: (tickValue, _) => `${tickValue}${unit}`
             }
           },
           temperature: {

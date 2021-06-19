@@ -18,10 +18,11 @@
     <ion-grid>
       <ion-row>
         <ion-col>
-          <app-info-card title="Temperature" icon="home-outline" content="{{temperature}}°C"></app-info-card>
+          <app-info-card title="Inside" icon="home-outline" content="{{temperature}}°C"></app-info-card>
         </ion-col>
         <ion-col>
-          <app-info-card title="Gas Usage" icon="flame-outline" content="{{gasUsageToday}}L/min"></app-info-card>
+          <app-info-card *ngIf="device.hasGasSensor" title="Gas Usage" icon="flame-outline" content="{{gasUsageToday}}L/min"></app-info-card>
+          <app-info-card *ngIf="!device.hasGasSensor" title="Outside" icon="sunny-outline" content="{{outsideAirTemperature}}°C"></app-info-card>
         </ion-col>
       </ion-row>
 
@@ -52,9 +53,8 @@
     </ion-card>
 
     <ion-card>
-      <ion-card-header>
-        Gas usage
-      </ion-card-header>
+      <ion-card-header *ngIf="device.hasGasSensor">Gas usage</ion-card-header>
+      <ion-card-header *ngIf="!device.hasGasSensor">Inside temperature</ion-card-header>
       <ion-card-content>
         <canvas #lineCanvas></canvas>
       </ion-card-content>

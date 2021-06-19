@@ -3,9 +3,7 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>
-      Last month
-    </ion-title>
+    <ion-title> Last month </ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -21,7 +19,8 @@
           <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
         </ion-col>
         <ion-col>
-          <app-info-card title="Gas Usage" icon="flame-outline" content="{{gasUsageMonthly}}m3"></app-info-card>
+          <app-info-card *ngIf="device.hasGasSensor" title="Gas Usage" icon="flame-outline" content="{{gasUsageMonthly}}m3"></app-info-card>
+          <app-info-card *ngIf="!device.hasGasSensor" title="Net energy" icon="flame-outline" content="{{netEnergyUsage}}kWh"></app-info-card>
         </ion-col>
       </ion-row>
 
@@ -41,7 +40,7 @@
                           [productionValues]="barChartPowerProduction"
                           [usageValues]="barChartPowerUsage"></app-energy-bar-chart>
 
-    <app-gas-chart [labels]="labels"
+    <app-gas-chart *ngIf="device.hasGasSensor" [labels]="labels"
                    [barGasUsage]="barGasUsage"></app-gas-chart>
 
     <app-cost-chart [labels]="costLabels" [values]="costValues"></app-cost-chart>

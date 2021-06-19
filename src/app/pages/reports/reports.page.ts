@@ -6,6 +6,7 @@ import {EnergyDataPoint} from '../../models/energydatapoint';
 import {HistoricData} from '../../models/historicdata';
 import {GroupedPowerData} from '../../models/groupedpowerdata';
 import {EnergyUsage} from '../../models/energyusage';
+import {Device} from "../../models/device";
 
 @Component({
   selector: 'app-reports',
@@ -16,6 +17,7 @@ export class ReportsPage implements OnInit, AfterViewInit {
   public gasUsageMonthly: string;
   public cost: string;
   public powerUsage: string;
+  public netEnergyUsage: string;
   public powerProduction: string;
   public costLabels: string[];
   public costValues: number[];
@@ -28,6 +30,8 @@ export class ReportsPage implements OnInit, AfterViewInit {
   public groupedEnergyUsage: number[];
   public groupedEnergyProduction: number[];
   public groupedLabels: string[];
+
+  public device: Device;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   public fullMonths = ['January', 'February', 'March', 'April', 'May',
@@ -52,6 +56,7 @@ export class ReportsPage implements OnInit, AfterViewInit {
 
   public ngOnInit() {
     const now = new Date();
+    this.device = this.dsmr.getSelectedDevice();
     this.selectedMonth = now.getMonth() - 1;
   }
 
@@ -152,10 +157,25 @@ export class ReportsPage implements OnInit, AfterViewInit {
   }
 
   private computeCards(data: EnergyUsage) {
+    if(data == null) {
+      this.setNullCards();
+      return;
+    }
+
+    const usage = data.energyUsage - data.energyProduction;
+    this.netEnergyUsage = usage.toFixed(2);
     this.powerUsage = data.energyUsage.toFixed(2);
     this.powerProduction = data.energyProduction.toFixed(2);
     this.gasUsageMonthly = data.gasUsage?.toFixed(2);
     this.cost = this.computeCost(data).toFixed(2);
+  }
+
+  private setNullCards() {
+    this.netEnergyUsage = '0';
+    this.powerUsage = '0';
+    this.powerProduction = '0';
+    this.gasUsageMonthly = '0';
+    this.cost = '0';
   }
 
   private computeCost(usage: EnergyUsage) {

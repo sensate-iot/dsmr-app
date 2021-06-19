@@ -4,7 +4,8 @@ import {SettingsService} from '../../../services/settings.service';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {mergeMap} from 'rxjs/operators';
 import {HistoricData} from '../../../models/historicdata';
-import {EnergyUsage} from "../../../models/energyusage";
+import {EnergyUsage} from '../../../models/energyusage';
+import {Device} from '../../../models/device';
 
 @Component({
   selector: 'app-monthly',
@@ -17,12 +18,14 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   public cost: string;
   public powerUsage: string;
   public powerProduction: string;
+  public netEnergyUsage: string;
   public costLabels: string[];
   public costValues: number[];
   public barChartPowerUsage: number[];
   public barChartPowerProduction: number[];
   public barGasUsage: number[];
   public labels: string[];
+  public device: Device;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static months = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
@@ -39,6 +42,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   public ngOnInit() {
+    this.device = this.dsmr.getSelectedDevice();
   }
 
   public ngAfterViewInit(): void {
@@ -123,6 +127,8 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   private computeCards(data: EnergyUsage) {
+    const netUsage = data.energyUsage - data.energyProduction;
+    this.netEnergyUsage = netUsage.toFixed(2);
     this.powerUsage = data.energyUsage.toFixed(2);
     this.powerProduction = data.energyProduction.toFixed(2);
     this.gasUsageMonthly = data.gasUsage?.toFixed(2);

@@ -15,7 +15,7 @@
     </ion-refresher-content>
   </ion-refresher>
   <div class="ion-padding">
-    <ion-grid>
+    <ion-grid *ngIf="device.hasGasSensor">
       <ion-row>
         <ion-col>
           <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
@@ -34,6 +34,16 @@
         </ion-col>
       </ion-row>
     </ion-grid>
+    <ion-grid *ngIf="!device.hasGasSensor">
+      <ion-row>
+        <ion-col>
+          <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
+        </ion-col>
+        <ion-col>
+          <app-info-card title="Net energy" icon="flash-outline" content="{{netEnergyUsage}}kWh"></app-info-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
     <app-energy-bar-chart [labels]="labels"
                           [productionValues]="barChartPowerProduction"
@@ -47,10 +57,8 @@
                           title="Energy by hour"
                           unit="kWh"></app-energy-bar-chart>
 
-    <ion-card>
-      <ion-card-header>
-        Gas usage
-      </ion-card-header>
+    <ion-card [hidden]="!device.hasGasSensor">
+      <ion-card-header> Gas usage </ion-card-header>
       <ion-card-content>
         <canvas #lineCanvas></canvas>
       </ion-card-content>

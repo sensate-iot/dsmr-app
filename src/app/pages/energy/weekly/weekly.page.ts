@@ -5,6 +5,7 @@ import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {SettingsService} from '../../../services/settings.service';
 import {mergeMap} from 'rxjs/operators';
 import {GroupedPowerData} from '../../../models/groupedpowerdata';
+import {Device} from '../../../models/device';
 
 @Component({
   selector: 'app-weekly',
@@ -17,9 +18,11 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   public costLabels: string[];
   public costValues: number[];
   public gasUsageToday: string;
+  public credit: string;
   public cost: string;
   public powerUsage: string;
   public powerProduction: string;
+  public netEnergyUsage: string;
 
   public groupedEnergyUsage: number[];
   public groupedEnergyProduction: number[];
@@ -28,6 +31,7 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   public barChartPowerUsage: number[];
   public barChartPowerProduction: number[];
   public labels: string[];
+  public device: Device;
 
   private readonly gasLabels: string[];
   private lineChart: Chart;
@@ -52,6 +56,7 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   }
 
   public ngOnInit() {
+    this.device = this.dsmr.getSelectedDevice();
   }
 
   public ngAfterViewInit(): void {
@@ -160,10 +165,15 @@ export class WeeklyPage implements OnInit, AfterViewInit {
       gasUsage += dp.gasFlow;
     });
 
+    const netEnergy = usage - production;
+    this.netEnergyUsage = netEnergy.toFixed(2);
     this.powerUsage = usage.toFixed(2);
     this.powerProduction = production.toFixed(2);
     this.gasUsageToday = gasUsage.toFixed(2);
     this.cost = this.computeCost(usage, production, gasUsage).toFixed(2);
+  }
+
+  private computeTariff() {
   }
 
   private computeCost(usage: number, production: number, gas: number) {
