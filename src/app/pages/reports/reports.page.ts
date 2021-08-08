@@ -35,11 +35,11 @@ export class ReportsPage implements OnInit, AfterViewInit {
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   public fullMonths = ['January', 'February', 'March', 'April', 'May',
-    'June', 'July', 'September', 'October', 'November', 'December'];
+    'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static months = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
-    'Jun', 'Jul', 'Sept', 'Oct', 'Nov', 'Dec'];
+    'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
   public constructor(private readonly dsmr: DsmrService,
                      private readonly settings: SettingsService) {
