@@ -7,6 +7,9 @@ import * as moment from 'moment';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {EnvironmentService} from '../../../services/environment.service';
 import {Device} from '../../../models/device';
+import {Response} from '../../../models/response';
+import { EnvironmentDataPoint } from 'src/app/models/environmentdatapoint';
+import { MeterReading } from 'src/app/models/meterreading';
 
 @Component({
   selector: 'app-overview',
@@ -99,11 +102,11 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadData() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const device = this.dsmr.getSelectedDevice();
 
       this.dsmr.getLatestData(device.id)
-        .pipe(takeUntil(this.destroy$), mergeMap(resp => {
+        .pipe(takeUntil(this.destroy$), mergeMap((resp: Response<MeterReading>) => {
           const data = resp.data;
 
           this.temperature = data.temperature.toFixed(2);
@@ -114,13 +117,13 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
           this.gasUsageToday = gas.toFixed(2);
 
           return this.loadPowerToday();
-        }), mergeMap(resp => {
+        }), mergeMap((resp: Response<EnergyDataPoint[]>) => {
           this.computePowerChart(resp.data);
           this.computeAndSetUsageToday(resp.data);
 
           return this.loadEnvironmentToday();
-        })).subscribe(resp => {
-        resp.data.forEach(dp => {
+        })).subscribe((resp: Response<EnvironmentDataPoint[]>) => {
+          resp.data.forEach(dp => {
           this.lineTemperatureToday.push(dp.insideTemperature);
         });
 

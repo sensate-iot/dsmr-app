@@ -3,6 +3,7 @@ import {DsmrService} from '../../../services/dsmr.service';
 import { Chart } from 'chart.js';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {SettingsService} from '../../../services/settings.service';
+import {Response} from '../../../models/response';
 import {mergeMap} from 'rxjs/operators';
 import {GroupedPowerData} from '../../../models/groupedpowerdata';
 import {Device} from '../../../models/device';
@@ -90,18 +91,18 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   }
 
   private loadData() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const startDate = WeeklyPage.getStartLastWeek();
       const endDate = WeeklyPage.getEndToday();
       const device = this.dsmr.getSelectedDevice();
 
-      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap(result => {
+      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap((result: Response<EnergyDataPoint[]>) => {
         this.computeCards(result.data);
         this.computeCharts(result.data);
         this.computeCostChart(result.data);
 
         return this.dsmr.getGroupedPowerData(device.id);
-      })).subscribe(result => {
+      })).subscribe((result: Response<GroupedPowerData[]>) => {
         this.computeGroupedChart(result.data);
 
         this.refreshView();

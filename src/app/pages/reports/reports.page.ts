@@ -6,7 +6,8 @@ import {EnergyDataPoint} from '../../models/energydatapoint';
 import {HistoricData} from '../../models/historicdata';
 import {GroupedPowerData} from '../../models/groupedpowerdata';
 import {EnergyUsage} from '../../models/energyusage';
-import {Device} from "../../models/device";
+import {Device} from '../../models/device';
+import {Response} from '../../models/response';
 
 @Component({
   selector: 'app-reports',
@@ -92,23 +93,23 @@ export class ReportsPage implements OnInit, AfterViewInit {
   }
 
   private loadData() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const startDate = this.getFirstOfMonth();
       const endDate = this.getEndOfMonth();
       const device = this.dsmr.getSelectedDevice();
 
-      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap(result => {
+      this.dsmr.getPowerData(device.id, startDate, endDate, 'day').pipe(mergeMap((result: Response<EnergyDataPoint[]>) => {
         this.computeCostChart(result.data);
         return this.dsmr.getEnergyUsage(device.id, startDate, endDate);
-      }), mergeMap(result => {
+      }), mergeMap((result: Response<EnergyUsage>) => {
         this.computeCards(result.data);
         return this.dsmr.getGroupedPowerDataBetween(device.id, startDate, endDate);
-      }), mergeMap(result => {
+      }), mergeMap((result: Response<GroupedPowerData[]>) => {
         this.computeGroupedChart(result.data);
 
         const firstMonthDate = ReportsPage.addMonths(startDate, -3);
         return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
-      })).subscribe(result => {
+      })).subscribe((result: Response<EnergyDataPoint[]>) => {
         this.computeOverviewCharts(result.data);
 
         resolve();

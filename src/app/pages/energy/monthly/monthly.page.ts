@@ -6,6 +6,7 @@ import {mergeMap} from 'rxjs/operators';
 import {HistoricData} from '../../../models/historicdata';
 import {EnergyUsage} from '../../../models/energyusage';
 import {Device} from '../../../models/device';
+import {Response} from '../../../models/response';
 
 @Component({
   selector: 'app-monthly',
@@ -65,21 +66,21 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   }
 
   private loadData() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const startDate = MonthlyPage.getFirstOfMonth();
       const endDate = MonthlyPage.getEndToday();
       const device = this.dsmr.getSelectedDevice();
 
       this.dsmr.getPowerData(device.id, startDate, endDate, 'day')
-        .pipe(mergeMap(result => {
+        .pipe(mergeMap((result: Response<EnergyDataPoint[]>) => {
           this.computeCostChart(result.data);
           return this.dsmr.getEnergyUsage(device.id, startDate, endDate);
-        }),mergeMap(result => {
+        }),mergeMap((result: Response<EnergyUsage>) => {
           this.computeCards(result.data);
           const firstMonthDate = MonthlyPage.addMonths(startDate, -3);
 
           return this.dsmr.getPowerData(device.id, firstMonthDate, endDate, 'day');
-        })).subscribe(result => {
+        })).subscribe((result: Response<EnergyDataPoint[]>) => {
           this.computeCharts(result.data);
           resolve();
       }, _ => {

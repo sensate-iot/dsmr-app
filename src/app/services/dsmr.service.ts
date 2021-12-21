@@ -7,7 +7,7 @@ import {EnergyDataPoint} from '../models/energydatapoint';
 import {Device} from '../models/device';
 import {AuthenticationService} from './authentication.service';
 import {GroupedPowerData} from '../models/groupedpowerdata';
-import {EnergyUsage} from "../models/energyusage";
+import {EnergyUsage} from '../models/energyusage';
 
 @Injectable({
   providedIn: 'root'
