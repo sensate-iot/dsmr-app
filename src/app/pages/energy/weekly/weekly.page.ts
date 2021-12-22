@@ -7,6 +7,7 @@ import {Response} from '../../../models/response';
 import {mergeMap} from 'rxjs/operators';
 import {GroupedPowerData} from '../../../models/groupedpowerdata';
 import {Device} from '../../../models/device';
+import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
 
 @Component({
   selector: 'app-weekly',
@@ -101,16 +102,49 @@ export class WeeklyPage implements OnInit, AfterViewInit {
         this.computeCharts(result.data);
         this.computeCostChart(result.data);
 
-        return this.dsmr.getGroupedPowerData(device.id);
-      })).subscribe((result: Response<GroupedPowerData[]>) => {
-        this.computeGroupedChart(result.data);
-
+        return this.dsmr.getAverageEnergyData(device.id, WeeklyPage.getStartLastWeek(), WeeklyPage.getEndToday());
+      }), mergeMap((result: Response<HourlyPowerAverage[]>) => {
+        this.computeEnergyAveragesThisWeek(result.data);
+        return this.dsmr.getAverageEnergyData(device.id, WeeklyPage.getStartLastMonth(), WeeklyPage.getEndLastWeek());
+      })).subscribe((result: Response<HourlyPowerAverage[]>) => {
+        this.computeEnergyAveragesThisMonth(result.data);
         this.refreshView();
         resolve();
       }, _ => {
         reject();
       });
     });
+  }
+
+  private computeEnergyAveragesThisMonth(data: HourlyPowerAverage[]) {
+    const resultsLastMonth: number[] = [];
+
+    data.forEach(x => {
+      if(x.hour.getHours() < 6 || x.hour.getHours() > 23) {
+        return;
+      }
+
+      resultsLastMonth.push(x.averagePowerUsage);
+    });
+
+    this.groupedEnergyProduction = resultsLastMonth;
+  }
+
+  private computeEnergyAveragesThisWeek(data: HourlyPowerAverage[]) {
+    const resultsThisWeek: number[] = [];
+    const labels: string[] = [];
+
+    data.forEach(x => {
+      if(x.hour.getHours() < 6 || x.hour.getHours() > 23) {
+        return;
+      }
+
+      resultsThisWeek.push(x.averagePowerUsage);
+      labels.push(`${x.hour.getHours()}:00`);
+    });
+
+    this.groupedLabels = labels;
+    this.groupedEnergyUsage = resultsThisWeek;
   }
 
   private computeGroupedChart(data: GroupedPowerData[]) {
@@ -270,6 +304,27 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     todayEnd.setMilliseconds(999);
 
     return todayEnd;
+  }
+
+    // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static getEndLastWeek() {
+    const endLastWeek = new Date();
+
+    endLastWeek.setHours(23, 59, 59);
+    endLastWeek.setMilliseconds(0);
+    endLastWeek.setDate(endLastWeek.getDate() - 7);
+    return endLastWeek;
+  }
+
+    // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static getStartLastMonth() {
+    const lastMonth = new Date();
+
+    lastMonth.setHours(0,0,0);
+    lastMonth.setMilliseconds(0);
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    lastMonth.setDate(lastMonth.getDate() - 7);
+    return lastMonth;
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering

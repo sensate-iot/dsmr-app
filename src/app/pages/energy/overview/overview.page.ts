@@ -8,8 +8,9 @@ import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {EnvironmentService} from '../../../services/environment.service';
 import {Device} from '../../../models/device';
 import {Response} from '../../../models/response';
-import { EnvironmentDataPoint } from 'src/app/models/environmentdatapoint';
-import { MeterReading } from 'src/app/models/meterreading';
+import { EnvironmentDataPoint } from 'app/models/environmentdatapoint';
+import { MeterReading } from 'app/models/meterreading';
+import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
 
 @Component({
   selector: 'app-overview',
@@ -27,6 +28,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   public outsideAirTemperature: string;
   public barChartPowerUsage: number[];
   public barChartPowerProduction: number[];
+  public barChartPowerAverages: number[];
   public energyLabels: string[];
   public device: Device;
 
@@ -45,6 +47,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$ = new Subject();
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
+    this.barChartPowerAverages = [];
     this.doughnutPowerData = [];
     this.energyUsageLabels = [];
     this.lineEnergyUsageToday = [];
@@ -99,6 +102,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     this.energyLabels = [];
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
+    this.barChartPowerAverages = [];
   }
 
   private loadData() {
@@ -116,6 +120,9 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
           const gas = data.gasFlow * 1000;
           this.gasUsageToday = gas.toFixed(2);
 
+          return this.dsmr.getAverageEnergyData(device.id, OverviewPage.getLastMonth(),  OverviewPage.getEndToday());
+        }), mergeMap((resp: Response<HourlyPowerAverage[]>) => {
+          this.computeEnergyAverages(resp.data);
           return this.loadPowerToday();
         }), mergeMap((resp: Response<EnergyDataPoint[]>) => {
           this.computePowerChart(resp.data);
@@ -133,6 +140,23 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         reject();
       });
     });
+  }
+
+  private computeEnergyAverages(data: HourlyPowerAverage[]) {
+    const now = moment(new Date()).add(-12, 'hours');
+    const avg: number[] = [];
+
+    data.forEach(dp => {
+      const dpMoment = moment(dp.hour).local();
+
+      if(dpMoment < now) {
+        return;
+      }
+
+      avg.push(dp.averagePowerUsage);
+    });
+
+    this.barChartPowerAverages = avg;
   }
 
   private computePowerChart(data: EnergyDataPoint[]) {
@@ -195,6 +219,21 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static getHourMinutes(date: Date) {
     return moment(date).local().format('HH:mm');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static getLastMonth() {
+    const today = new Date();
+    const m = today.getMonth();
+
+    today.setMonth(today.getMonth() - 1);
+
+    if(today.getMonth() === m) {
+      today.setDate(0);
+    }
+
+    today.setHours(0, 0, 0);
+    return today;
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering

@@ -36,12 +36,15 @@
       </ion-row>
     </ion-grid>
 
-    <app-energy-bar-chart title="Energy"
+    <app-energy-bar-chart *ngIf="device.hasSolarCells" title="Energy"
                           unit="Wh"
                           [usageValues]="barChartPowerUsage"
                           [productionValues]="barChartPowerProduction"
                           [labels]="energyLabels"
     ></app-energy-bar-chart>
+    <app-energy-bar-chart title="Energy" unit="Wh" [usageValues]="barChartPowerUsage"
+                          [productionValues]="barChartPowerAverages"
+                          [labels]="energyLabels"></app-energy-bar-chart>
 
     <ion-card>
       <ion-card-header>
