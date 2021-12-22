@@ -5,7 +5,6 @@ import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {SettingsService} from '../../../services/settings.service';
 import {Response} from '../../../models/response';
 import {mergeMap} from 'rxjs/operators';
-import {GroupedPowerData} from '../../../models/groupedpowerdata';
 import {Device} from '../../../models/device';
 import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
 
@@ -20,7 +19,8 @@ export class WeeklyPage implements OnInit, AfterViewInit {
   public costLabels: string[];
   public costValues: number[];
   public gasUsageToday: string;
-  public credit: string;
+  public averageDailyEnergyUsage: string;
+  public averageDailyCost: string;
   public cost: string;
   public powerUsage: string;
   public powerProduction: string;
@@ -186,10 +186,15 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     this.powerUsage = usage.toFixed(2);
     this.powerProduction = production.toFixed(2);
     this.gasUsageToday = gasUsage.toFixed(2);
-    this.cost = this.computeCost(usage, production, gasUsage).toFixed(2);
+    this.averageDailyEnergyUsage = (usage / data.length).toFixed(2);
+
+    this.computeCostValues(usage, production, gasUsage, data.length);
   }
 
-  private computeTariff() {
+  private computeCostValues(usage: number, production: number, gas: number, count: number) {
+    const cost = this.computeCost(usage, production, gas);
+    this.cost = cost.toFixed(2);
+    this.averageDailyCost = (cost / count).toFixed(2);
   }
 
   private computeCost(usage: number, production: number, gas: number) {

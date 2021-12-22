@@ -7,6 +7,7 @@ import {HistoricData} from '../../../models/historicdata';
 import {EnergyUsage} from '../../../models/energyusage';
 import {Device} from '../../../models/device';
 import {Response} from '../../../models/response';
+import { CostCalculatorService } from 'app/services/cost-calculator.service';
 
 @Component({
   selector: 'app-monthly',
@@ -20,6 +21,8 @@ export class MonthlyPage implements OnInit, AfterViewInit {
   public powerUsage: string;
   public powerProduction: string;
   public netEnergyUsage: string;
+  public energyUsagePerDay: string;
+  public averageCostPerDay: string;
   public costLabels: string[];
   public costValues: number[];
   public barChartPowerUsage: number[];
@@ -33,6 +36,7 @@ export class MonthlyPage implements OnInit, AfterViewInit {
     'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 
   public constructor(private readonly dsmr: DsmrService,
+                     private readonly costCalculator: CostCalculatorService,
                      private readonly settings: SettingsService) {
     this.barGasUsage = [];
     this.labels = [];
@@ -133,38 +137,34 @@ export class MonthlyPage implements OnInit, AfterViewInit {
 
   private computeCards(data: EnergyUsage) {
     const netUsage = data.energyUsage - data.energyProduction;
+    const today = new Date();
+
     this.netEnergyUsage = netUsage.toFixed(2);
     this.powerUsage = data.energyUsage.toFixed(2);
     this.powerProduction = data.energyProduction.toFixed(2);
     this.gasUsageMonthly = data.gasUsage?.toFixed(2);
-    this.cost = this.computeCost(data).toFixed(2);
-  }
-
-  private computeCost(usage: EnergyUsage) {
-    const prices = this.settings.getPrices();
-    let cost = 0;
-
-    cost += prices.powerUsage * usage.energyUsage;
-    cost += prices.gas * usage.gasUsage;
-    cost -= prices.powerProduction * usage.energyProduction;
-
-    return cost;
+    this.cost = this.costCalculator.computeCostForEnergyUsage(data).toFixed(2);
+    this.energyUsagePerDay = (netUsage / today.getDate()).toFixed(2);
   }
 
   private computeCostChart(data: EnergyDataPoint[]) {
     const prices = this.settings.getPrices();
     const labels: string[] = [];
     const values: number[] = [];
+    let average = 0;
 
     data.forEach(x => {
       let cost = x.energyUsage / 1000 * prices.powerUsage;
       cost -= x.energyProduction / 1000 * prices.powerProduction;
       cost += x.gasFlow * prices.gas;
 
+      average += cost;
       values.push(cost);
       labels.push(`${MonthlyPage.padNumer(x.timestamp.getDate(), 2)}-${MonthlyPage.padNumer(x.timestamp.getMonth(), 2)}`);
     });
 
+    average /= data.length;
+    this.averageCostPerDay = average.toFixed(2);
     this.costLabels = labels;
     this.costValues = values;
   }

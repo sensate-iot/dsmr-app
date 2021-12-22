@@ -12,6 +12,7 @@ import { EnvironmentDataPoint } from 'app/models/environmentdatapoint';
 import { MeterReading } from 'app/models/meterreading';
 import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
 import { EnergyUsage } from 'app/models/energyusage';
+import { CostCalculatorService } from 'app/services/cost-calculator.service';
 
 @Component({
   selector: 'app-overview',
@@ -45,6 +46,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroy$;
 
   public constructor(private readonly dsmr: DsmrService,
+                     private readonly costCalculator: CostCalculatorService,
                      private readonly env: EnvironmentService) {
     this.destroy$ = new Subject();
     this.barChartPowerProduction = [];
@@ -131,7 +133,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
           this.computeAndSetUsageToday(resp.data);
           return this.dsmr.getEnergyUsage(device.id, OverviewPage.getStartToday(), OverviewPage.getEndToday());
         }), mergeMap((resp: Response<EnergyUsage>) => {
-          this.computeCostToday(resp.data);
+          this.costToday = this.costCalculator.computeCostForEnergyUsage(resp.data).toFixed(2);
           return this.loadEnvironmentToday();
         })).subscribe((resp: Response<EnvironmentDataPoint[]>) => {
           resp.data.forEach(dp => {
@@ -144,10 +146,6 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         reject();
       });
     });
-  }
-
-  private computeCostToday(usage: EnergyUsage) {
-
   }
 
   private computeEnergyAverages(data: HourlyPowerAverage[]) {

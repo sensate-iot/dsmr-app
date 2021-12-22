@@ -20,7 +20,8 @@
         </ion-col>
         <ion-col>
           <app-info-card *ngIf="device.hasGasSensor" title="Gas Usage" icon="flame-outline" content="{{gasUsageMonthly}}m3"></app-info-card>
-          <app-info-card *ngIf="!device.hasGasSensor" title="Net energy" icon="flame-outline" content="{{netEnergyUsage}}kWh"></app-info-card>
+          <app-info-card *ngIf="!device.hasGasSensor && device.hasSolarCells" title="Net energy" icon="flame-outline" content="{{netEnergyUsage}}kWh"></app-info-card>
+          <app-info-card *ngIf="!device.hasGasSensor && !device.hasSolarCells" title="Daily average" icon="flame-outline" content="{{energyUsagePerDay}}kWh"></app-info-card>
         </ion-col>
       </ion-row>
 
@@ -29,7 +30,8 @@
           <app-info-card title="Usage" icon="flash-outline" content="{{powerUsage}}kWh"></app-info-card>
         </ion-col>
         <ion-col>
-          <app-info-card title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
+          <app-info-card *ngIf="device.hasSolarCells" title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
+          <app-info-card *ngIf="!device.hasSolarCells" title="Daily average" icon="cash-outline" content="€{{averageCostPerDay}}"></app-info-card>
         </ion-col>
       </ion-row>
     </ion-grid>

@@ -36,7 +36,8 @@
           <app-info-card title="Usage" icon="flash-outline" content="{{powerUsage}}kWh"></app-info-card>
         </ion-col>
         <ion-col>
-          <app-info-card title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
+          <app-info-card *ngIf="device.hasSolarCells" title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
+          <app-info-card *ngIf="!device.hasSolarCells" title="Average cost" icon="cash-outline" content="€{{averageCostPerDay}}"></app-info-card>
         </ion-col>
       </ion-row>
     </ion-grid>

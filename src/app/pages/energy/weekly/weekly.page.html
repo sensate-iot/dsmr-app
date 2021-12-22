@@ -15,13 +15,14 @@
     </ion-refresher-content>
   </ion-refresher>
   <div class="ion-padding">
-    <ion-grid *ngIf="device.hasGasSensor">
+    <ion-grid>
       <ion-row>
         <ion-col>
           <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
         </ion-col>
         <ion-col>
-          <app-info-card title="Gas Usage" icon="flame-outline" content="{{gasUsageToday}}m3"></app-info-card>
+          <app-info-card *ngIf="device.hasGasSensor" title="Gas Usage" icon="flame-outline" content="{{gasUsageToday}}m3"></app-info-card>
+          <app-info-card *ngIf="!device.hasGasSensor" title="Daily usage" icon="sunny-outline" content="{{averageDailyEnergyUsage}}kWh"></app-info-card>
         </ion-col>
       </ion-row>
 
@@ -30,17 +31,8 @@
           <app-info-card title="Usage" icon="flash-outline" content="{{powerUsage}}kWh"></app-info-card>
         </ion-col>
         <ion-col>
-          <app-info-card title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-    <ion-grid *ngIf="!device.hasGasSensor">
-      <ion-row>
-        <ion-col>
-          <app-info-card title="Cost" icon="cash-outline" content="€{{cost}}"></app-info-card>
-        </ion-col>
-        <ion-col>
-          <app-info-card title="Net energy" icon="flash-outline" content="{{netEnergyUsage}}kWh"></app-info-card>
+          <app-info-card *ngIf="device.hasSolarCells" title="Production" icon="sunny-outline" content="{{powerProduction}}kWh"></app-info-card>
+          <app-info-card *ngIf="!device.hasSolarCells" title="Daily cost" icon="flame-outline" content="€{{averageDailyCost}}"></app-info-card>
         </ion-col>
       </ion-row>
     </ion-grid>
