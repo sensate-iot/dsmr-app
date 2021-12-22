@@ -151,7 +151,10 @@ export class ReportsPage implements OnInit, AfterViewInit {
       labels.push(ReportsPage.months[key]);
     });
 
-    this.barChartPowerProduction = powerProduction;
+    if(this.device.hasSolarCells) {
+      this.barChartPowerProduction = powerProduction;
+    }
+
     this.barChartPowerUsage = powerUsage;
     this.barGasUsage = gasUsage;
     this.labels = labels;
@@ -226,7 +229,11 @@ export class ReportsPage implements OnInit, AfterViewInit {
     });
 
     this.groupedLabels = labels;
-    this.groupedEnergyProduction = production;
+
+    if(this.device.hasSolarCells) {
+      this.groupedEnergyProduction = production;
+    }
+
     this.groupedEnergyUsage = usage;
   }
 

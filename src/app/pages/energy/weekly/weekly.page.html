@@ -46,16 +46,18 @@
     </ion-grid>
 
     <app-energy-bar-chart [labels]="labels"
-                          [productionValues]="barChartPowerProduction"
-                          [usageValues]="barChartPowerUsage"
+                          [firstSeriesValues]="barChartPowerUsage"
+                          [secondSeriesValues]="barChartPowerProduction"
                           title="Energy per day"
                           unit="kWh"></app-energy-bar-chart>
 
     <app-energy-bar-chart [labels]="groupedLabels"
-                          [productionValues]="groupedEnergyProduction"
-                          [usageValues]="groupedEnergyUsage"
+                          [firstSeriesValues]="groupedEnergyProduction"
+                          [secondSeriesValues]="groupedEnergyUsage"
+                          firstSeriesTitle="This week"
+                          secondSeriesTitle="Last month"
                           title="Energy by hour"
-                          unit="kWh"></app-energy-bar-chart>
+                          unit="Wh"></app-energy-bar-chart>
 
     <ion-card [hidden]="!device.hasGasSensor">
       <ion-card-header> Gas usage </ion-card-header>

@@ -10,8 +10,10 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
   @ViewChild('energyCanvas') energyCanvas: ElementRef;
 
   @Input() labels: string[];
-  @Input() productionValues: number[];
-  @Input() usageValues: number[];
+  @Input() firstSeriesValues: number[];
+  @Input() secondSeriesValues: number[];
+  @Input() firstSeriesTitle: string;
+  @Input() secondSeriesTitle: string;
   @Input() unit: string;
   @Input() title: string;
 
@@ -38,6 +40,7 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
     this.internalUsageValues.length = 0;
 
     this.copy();
+    this.addSecondXAxisIf();
     this.barChart.update();
   }
 
@@ -49,16 +52,22 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
   public ngOnInit() {}
 
   private copy() {
-    this.productionValues.forEach(x => {
-      this.internalProductionValues.push(x);
-    });
+    this.copyIf(this.firstSeriesValues, this.internalUsageValues);
+    this.copyIf(this.secondSeriesValues, this.internalProductionValues);
 
-    this.usageValues.forEach(x => {
-      this.internalUsageValues.push(x);
-    });
 
     this.labels.forEach(x => {
       this.internalLabels.push(x);
+    });
+  }
+
+  private copyIf(series: number[], target: number[]) {
+    if(series == null) {
+      return;
+    }
+
+    series.forEach(v => {
+      target.push(v);
     });
   }
 
@@ -67,32 +76,7 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
       type: 'bar',
       data: {
         labels: this.internalLabels,
-        datasets: [
-          {
-            yAxisID: 'power',
-            label: 'Usage',
-            data: this.internalUsageValues,
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(255,99,132,1)'
-            ],
-            borderWidth: 1
-          },
-          {
-            yAxisID: 'power',
-            label: 'Production',
-            data: this.internalProductionValues,
-            backgroundColor: [
-              'rgba(99, 255, 132, 0.2)'
-            ],
-            borderColor: [
-              'rgba(99,255,132,1)'
-            ],
-            borderWidth: 1
-          }
-        ]
+        datasets: []
       },
       options: {
         scales: {
@@ -106,5 +90,53 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
         }
       }
     });
+
+    this.buildXAxis();
+  }
+
+  private buildXAxis() {
+    this.barChart.data.datasets.push(this.buildFirstAxis());
+    this.addSecondXAxisIf();
+  }
+
+  private addSecondXAxisIf() {
+    if(this.barChart.data.datasets.length >= 2) {
+      return;
+    }
+
+    if(this.secondSeriesValues != null && this.secondSeriesValues.length > 0) {
+      console.log(this.secondSeriesValues);
+      this.barChart.data.datasets.push(this.buildSecondAxis());
+    }
+  }
+
+  private buildFirstAxis() {
+    return {
+      yAxisID: 'power',
+      label: this.firstSeriesTitle ?? 'Usage',
+      data: this.internalUsageValues,
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.2)'
+      ],
+      borderColor: [
+        'rgba(255,99,132,1)'
+      ],
+      borderWidth: 1
+    };
+  }
+
+  private buildSecondAxis() {
+    return {
+      yAxisID: 'power',
+      label: this.secondSeriesTitle ?? 'Production',
+      data: this.internalProductionValues,
+      backgroundColor: [
+        'rgba(99, 255, 132, 0.2)'
+      ],
+      borderColor: [
+        'rgba(99,255,132,1)'
+      ],
+      borderWidth: 1
+    };
   }
 }

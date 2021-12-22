@@ -37,8 +37,8 @@
     <app-energy-bar-chart title="Energy"
                           unit="kWh"
                           [labels]="labels"
-                          [productionValues]="barChartPowerProduction"
-                          [usageValues]="barChartPowerUsage"></app-energy-bar-chart>
+                          [firstSeriesValues]="barChartPowerUsage"
+                          [secondSeriesValues]="barChartPowerProduction"></app-energy-bar-chart>
 
     <app-gas-chart *ngIf="device.hasGasSensor" [labels]="labels"
                    [barGasUsage]="barGasUsage"></app-gas-chart>

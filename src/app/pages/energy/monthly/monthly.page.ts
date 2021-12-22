@@ -123,7 +123,11 @@ export class MonthlyPage implements OnInit, AfterViewInit {
 
     this.labels = labels;
     this.barGasUsage = gasUsage;
-    this.barChartPowerProduction = powerProduction;
+
+    if(this.device.hasSolarCells) {
+      this.barChartPowerProduction = powerProduction;
+    }
+
     this.barChartPowerUsage = powerUsage;
   }
 

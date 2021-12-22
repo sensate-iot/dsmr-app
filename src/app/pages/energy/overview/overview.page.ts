@@ -11,6 +11,7 @@ import {Response} from '../../../models/response';
 import { EnvironmentDataPoint } from 'app/models/environmentdatapoint';
 import { MeterReading } from 'app/models/meterreading';
 import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
+import { EnergyUsage } from 'app/models/energyusage';
 
 @Component({
   selector: 'app-overview',
@@ -25,6 +26,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   public temperature: string;
   public powerUsage: string;
   public powerProduction: string;
+  public costToday: string;
   public outsideAirTemperature: string;
   public barChartPowerUsage: number[];
   public barChartPowerProduction: number[];
@@ -127,7 +129,9 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         }), mergeMap((resp: Response<EnergyDataPoint[]>) => {
           this.computePowerChart(resp.data);
           this.computeAndSetUsageToday(resp.data);
-
+          return this.dsmr.getEnergyUsage(device.id, OverviewPage.getStartToday(), OverviewPage.getEndToday());
+        }), mergeMap((resp: Response<EnergyUsage>) => {
+          this.computeCostToday(resp.data);
           return this.loadEnvironmentToday();
         })).subscribe((resp: Response<EnvironmentDataPoint[]>) => {
           resp.data.forEach(dp => {
@@ -140,6 +144,10 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         reject();
       });
     });
+  }
+
+  private computeCostToday(usage: EnergyUsage) {
+
   }
 
   private computeEnergyAverages(data: HourlyPowerAverage[]) {
@@ -189,12 +197,10 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
 
   private computeAndSetUsageToday(today: EnergyDataPoint[]) {
     let energyUsage = 0;
-    let gasUsage = 0;
     let lowTariffTotal = 0;
     let normalTariffTotal = 0;
 
     today.forEach(dp => {
-      gasUsage += dp.gasFlow / 1000.0;
       energyUsage += dp.energyUsage;
 
       if(this.device.hasGasSensor) {
@@ -282,7 +288,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     });
 
     let labelName = 'Energy';
-    let unit = 'kWh';
+    let unit = 'Wh';
 
     if(this.device.hasGasSensor) {
       labelName = 'Gas';

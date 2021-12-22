@@ -147,35 +147,16 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     this.groupedEnergyUsage = resultsThisWeek;
   }
 
-  private computeGroupedChart(data: GroupedPowerData[]) {
-    const usage: number [] = [];
-    const production: number[] = [];
-    const labels: string[] = [];
-
-    data.forEach(x => {
-      if (x.hour < 6 || x.hour > 22) {
-        return;
-      }
-
-      production.push(x.production / 1000);
-      usage.push(x.usage / 1000);
-
-      const hour = WeeklyPage.padNumer(x.hour, 2);
-      labels.push(`${hour}:00`);
-    });
-
-    this.groupedLabels = labels;
-    this.groupedEnergyProduction = production;
-    this.groupedEnergyUsage = usage;
-  }
-
   private computeCharts(data: EnergyDataPoint[]) {
     const usage: number[] = [];
     const production: number[] = [];
     const labels: string[] = [];
 
     data.forEach(dp => {
-      production.push(dp.energyProduction / 1000);
+      if(this.device.hasSolarCells) {
+        production.push(dp.energyProduction / 1000);
+      }
+
       usage.push(dp.energyUsage / 1000);
       this.lineGasUsage.push(dp.gasFlow);
 

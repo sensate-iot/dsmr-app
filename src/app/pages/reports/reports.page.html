@@ -44,12 +44,12 @@
     <app-energy-bar-chart title="Energy"
                           unit="kWh"
                           [labels]="labels"
-                          [productionValues]="barChartPowerProduction"
-                          [usageValues]="barChartPowerUsage"></app-energy-bar-chart>
+                          [firstSeriesValues]="barChartPowerUsage"
+                          [secondSeriesValues]="barChartPowerProduction"></app-energy-bar-chart>
 
     <app-energy-bar-chart [labels]="groupedLabels"
-                          [productionValues]="groupedEnergyProduction"
-                          [usageValues]="groupedEnergyUsage"
+                          [firstSeriesValues]="groupedEnergyUsage"
+                          [secondSeriesValues]="groupedEnergyProduction"
                           title="Energy by hour"
                           unit="kWh"></app-energy-bar-chart>
 

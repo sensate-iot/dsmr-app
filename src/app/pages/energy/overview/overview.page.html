@@ -38,12 +38,15 @@
 
     <app-energy-bar-chart *ngIf="device.hasSolarCells" title="Energy"
                           unit="Wh"
-                          [usageValues]="barChartPowerUsage"
-                          [productionValues]="barChartPowerProduction"
+                          [firstSeriesValues]="barChartPowerUsage"
+                          [secondSeriesValues]="barChartPowerProduction"
                           [labels]="energyLabels"
     ></app-energy-bar-chart>
-    <app-energy-bar-chart title="Energy" unit="Wh" [usageValues]="barChartPowerUsage"
-                          [productionValues]="barChartPowerAverages"
+    <app-energy-bar-chart title="Energy" unit="Wh"
+                          [firstSeriesValues]="barChartPowerUsage"
+                          [secondSeriesValues]="barChartPowerAverages"
+                          firstSeriesTitle="Usage"
+                          secondSeriesTitle="Average"
                           [labels]="energyLabels"></app-energy-bar-chart>
 
     <ion-card>
