@@ -120,7 +120,7 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     const resultsLastMonth: number[] = [];
 
     data.forEach(x => {
-      if(x.hour.getHours() < 6 || x.hour.getHours() > 23) {
+      if(x.hour.getUTCHours() < 6 || x.hour.getUTCHours() > 23) {
         return;
       }
 
@@ -135,12 +135,12 @@ export class WeeklyPage implements OnInit, AfterViewInit {
     const labels: string[] = [];
 
     data.forEach(x => {
-      if(x.hour.getHours() < 6 || x.hour.getHours() > 23) {
+      if(x.hour.getUTCHours() < 6 || x.hour.getUTCHours() > 23) {
         return;
       }
 
       resultsThisWeek.push(x.averagePowerUsage);
-      labels.push(`${x.hour.getHours()}:00`);
+      labels.push(`${x.hour.getUTCHours()}:00`);
     });
 
     this.groupedLabels = labels;

@@ -105,7 +105,6 @@ export class EnergyBarChartComponent implements OnInit, OnChanges, AfterViewInit
     }
 
     if(this.secondSeriesValues != null && this.secondSeriesValues.length > 0) {
-      console.log(this.secondSeriesValues);
       this.barChart.data.datasets.push(this.buildSecondAxis());
     }
   }
