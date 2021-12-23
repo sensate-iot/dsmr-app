@@ -1,14 +1,14 @@
 {
-  "appId": "com.sensateiot.smartenergy",
-  "appName": "Smart Energy",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "webDir": "www",
-  "windowsAndroidStudioPath": "E:\\Programs\\Android\\Android Studio\\bin\\studio64.exe",
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 0
-    }
-  },
-  "cordova": {}
+	"appId": "com.sensateiot.smartenergy",
+	"appName": "Smart Energy",
+	"bundledWebRuntime": false,
+	"npmClient": "npm",
+	"webDir": "www",
+	"windowsAndroidStudioPath": "E:\\Programs\\Android\\Android Studio\\bin\\studio64.exe",
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0
+		}
+	},
+	"cordova": {}
 }
