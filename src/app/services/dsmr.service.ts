@@ -7,7 +7,8 @@ import {EnergyDataPoint} from '../models/energydatapoint';
 import {Device} from '../models/device';
 import {AuthenticationService} from './authentication.service';
 import {GroupedPowerData} from '../models/groupedpowerdata';
-import {EnergyUsage} from "../models/energyusage";
+import {EnergyUsage} from '../models/energyusage';
+import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,11 @@ export class DsmrService {
     const url = `${environment.dsmrApiHost}/aggregates/power/${id}?granularity=${granularity}&start=${startDate}&end=${endDate}`;
 
     return this.http.get<Response<EnergyDataPoint[]>>(url);
+  }
+
+  public getAverageEnergyData(id: number, start: Date, end: Date) {
+    const url = `${environment.dsmrApiHost}/aggregates/energy/${id}/average?start=${start.toISOString()}&end=${end.toISOString()}`;
+    return this.http.get<Response<HourlyPowerAverage[]>>(url);
   }
 
   public getLatestData(id: number) {

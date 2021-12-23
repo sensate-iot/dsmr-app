@@ -3,5 +3,6 @@ export class Device {
   public enabled: boolean;
   public hasEnvironmentSensor: boolean;
   public hasGasSensor: boolean;
+  public hasSolarCells: boolean;
   public timestamp: Date;
 }

@@ -7,6 +7,12 @@ import * as moment from 'moment';
 import {EnergyDataPoint} from '../../../models/energydatapoint';
 import {EnvironmentService} from '../../../services/environment.service';
 import {Device} from '../../../models/device';
+import {Response} from '../../../models/response';
+import { EnvironmentDataPoint } from 'app/models/environmentdatapoint';
+import { MeterReading } from 'app/models/meterreading';
+import { HourlyPowerAverage } from 'app/models/HourlyPowerAverage';
+import { EnergyUsage } from 'app/models/energyusage';
+import { CostCalculatorService } from 'app/services/cost-calculator.service';
 
 @Component({
   selector: 'app-overview',
@@ -21,9 +27,11 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   public temperature: string;
   public powerUsage: string;
   public powerProduction: string;
+  public costToday: string;
   public outsideAirTemperature: string;
   public barChartPowerUsage: number[];
   public barChartPowerProduction: number[];
+  public barChartPowerAverages: number[];
   public energyLabels: string[];
   public device: Device;
 
@@ -38,10 +46,12 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   private readonly destroy$;
 
   public constructor(private readonly dsmr: DsmrService,
+                     private readonly costCalculator: CostCalculatorService,
                      private readonly env: EnvironmentService) {
     this.destroy$ = new Subject();
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
+    this.barChartPowerAverages = [];
     this.doughnutPowerData = [];
     this.energyUsageLabels = [];
     this.lineEnergyUsageToday = [];
@@ -96,14 +106,15 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     this.energyLabels = [];
     this.barChartPowerProduction = [];
     this.barChartPowerUsage = [];
+    this.barChartPowerAverages = [];
   }
 
   private loadData() {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const device = this.dsmr.getSelectedDevice();
 
       this.dsmr.getLatestData(device.id)
-        .pipe(takeUntil(this.destroy$), mergeMap(resp => {
+        .pipe(takeUntil(this.destroy$), mergeMap((resp: Response<MeterReading>) => {
           const data = resp.data;
 
           this.temperature = data.temperature.toFixed(2);
@@ -113,14 +124,19 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
           const gas = data.gasFlow * 1000;
           this.gasUsageToday = gas.toFixed(2);
 
+          return this.dsmr.getAverageEnergyData(device.id, OverviewPage.getLastMonth(),  OverviewPage.getEndToday());
+        }), mergeMap((resp: Response<HourlyPowerAverage[]>) => {
+          this.computeEnergyAverages(resp.data);
           return this.loadPowerToday();
-        }), mergeMap(resp => {
+        }), mergeMap((resp: Response<EnergyDataPoint[]>) => {
           this.computePowerChart(resp.data);
           this.computeAndSetUsageToday(resp.data);
-
+          return this.dsmr.getEnergyUsage(device.id, OverviewPage.getStartToday(), OverviewPage.getEndToday());
+        }), mergeMap((resp: Response<EnergyUsage>) => {
+          this.costToday = this.costCalculator.computeCostForEnergyUsage(resp.data).toFixed(2);
           return this.loadEnvironmentToday();
-        })).subscribe(resp => {
-        resp.data.forEach(dp => {
+        })).subscribe((resp: Response<EnvironmentDataPoint[]>) => {
+          resp.data.forEach(dp => {
           this.lineTemperatureToday.push(dp.insideTemperature);
         });
 
@@ -130,6 +146,23 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
         reject();
       });
     });
+  }
+
+  private computeEnergyAverages(data: HourlyPowerAverage[]) {
+    const now = moment(new Date()).add(-12, 'hours');
+    const avg: number[] = [];
+
+    data.forEach(dp => {
+      const dpMoment = moment(dp.hour).local();
+
+      if(dpMoment < now) {
+        return;
+      }
+
+      avg.push(dp.averagePowerUsage);
+    });
+
+    this.barChartPowerAverages = avg;
   }
 
   private computePowerChart(data: EnergyDataPoint[]) {
@@ -162,12 +195,10 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
 
   private computeAndSetUsageToday(today: EnergyDataPoint[]) {
     let energyUsage = 0;
-    let gasUsage = 0;
     let lowTariffTotal = 0;
     let normalTariffTotal = 0;
 
     today.forEach(dp => {
-      gasUsage += dp.gasFlow / 1000.0;
       energyUsage += dp.energyUsage;
 
       if(this.device.hasGasSensor) {
@@ -192,6 +223,21 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private static getHourMinutes(date: Date) {
     return moment(date).local().format('HH:mm');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  private static getLastMonth() {
+    const today = new Date();
+    const m = today.getMonth();
+
+    today.setMonth(today.getMonth() - 1);
+
+    if(today.getMonth() === m) {
+      today.setDate(0);
+    }
+
+    today.setHours(0, 0, 0);
+    return today;
   }
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -240,7 +286,7 @@ export class OverviewPage implements OnInit, AfterViewInit, OnDestroy {
     });
 
     let labelName = 'Energy';
-    let unit = 'kWh';
+    let unit = 'Wh';
 
     if(this.device.hasGasSensor) {
       labelName = 'Gas';
